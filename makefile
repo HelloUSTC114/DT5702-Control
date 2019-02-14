@@ -7,6 +7,8 @@ LIBFULL=lib$(LIB).so
 DICT=$(LIB)_Dict.cxx
 LINK=$(LIB)_LinkDef.h
 
+EXE=test
+
 $(LIBFULL):	$(DICT) $(OBJ)
 	`root-config --cxx --cflags` -fPIC -shared -o $@ FEBDTP.o $(DICT)
 
@@ -19,6 +21,9 @@ $(DICT):$(HEADER) $(LINK)
 clean:
 	rm *.o
 distclean:
-	rm *.o *Dict* *.so
+	rm *.o *Dict* *.so $(EXE)
 
 
+
+test:  FEBDAQMULT.C $(LIBFULL)
+	`root-config --cxx `	-o	$@	$<	-L.	-l$(LIB)	`root-config --cflags --glibs`

@@ -117,8 +117,15 @@
 #include "TMath.h"
 #include "TF1.h"
 #include "TTree.h"
+#include "TGraph.h"
+#include "TBenchmark.h"
+#include "TH2F.h"
+#include "TSystem.h"
+#include "TH1F.h"
 #include "time.h"
 #include <sys/timeb.h>
+
+#include "FEBDTP.hxx"
 
 #define maxpe 10 //max number of photoelectrons to use in the fit
 int NEVDISP=200; //number of lines in the waterfall event display
@@ -195,37 +202,37 @@ void ConfigSetGain(int chan, UChar_t val);
 void ConfigSetBias(int chan, UChar_t val);
 void ConfigSetFIL(uint32_t mask1, uint32_t mask2, uint8_t majority); 
  
-UInt_t GrayToBin(UInt_t n)
+UInt_t GrayToBin(UInt_t n)    // Gray code to Binary code
 {
-UInt_t res=0;
-int a[32],b[32],i=0,c=0;
+  UInt_t res=0;
+  int a[32],b[32],i=0,c=0;
 
-for(i=0; i<32; i++){
-if((n & 0x80000000)>0) a[i]=1;
-else a[i]=0;
-n=n<<1;
-//printf("%1d",a[i]);
-}
+  for(i=0; i<32; i++){
+    if((n & 0x80000000)>0) a[i]=1;
+    else a[i]=0;
+    n=n<<1;
+    //printf("%1d",a[i]);
+  }
 
-b[0]=a[0];
-//printf("  %1d",b[0]);
-for(i=1; i<32; i++){
-if(a[i]>0) if(b[i-1]==0) b[i]=1; else b[i]=0;
-else b[i]=b[i-1];
-//printf("%1d",b[i]);
-}
+  b[0]=a[0];
+  //printf("  %1d",b[0]);
+  for(i=1; i<32; i++){
+    if(a[i]>0) if(b[i-1]==0) b[i]=1; else b[i]=0;
+    else b[i]=b[i-1];
+    //printf("%1d",b[i]);
+  }
 
-for(i=0; i<32; i++){
-res=(res<<1);
-res=(res | b[i]); 
-}
-//printf("\n");
+  for(i=0; i<32; i++){
+    res=(res<<1);
+    res=(res | b[i]); 
+  }
+  //printf("\n");
 
   return res;
 }
 
 
-Double_t mppc0( Double_t *xx, Double_t *par)
+Double_t mppc0( Double_t *xx, Double_t *par)  // Fit function of SiPM spectrum
 {
   Double_t retval=0; //return value 
   Double_t N=par[0]; //normalisation factor
@@ -236,14 +243,14 @@ Double_t mppc0( Double_t *xx, Double_t *par)
   Double_t exess=par[5]; //exess poisson widening factor
   Double_t xtalk=par[6]; //x-talk factor
   Double_t x=xx[0]; //argument  in ADC counts
-  
+
   for(int i=0; i<=maxpe; i++)
   {
     peaks[i]=zero+gain*i;
     peaksint[i]=TMath::Poisson(i,avnpe);
     if(i>=2) peaksint[i]=peaksint[i]+peaksint[i-1]*xtalk;
   }
-   for(int i=0; i<=maxpe; i++)
+    for(int i=0; i<=maxpe; i++)
   {
     retval+=peaksint[i]*(TMath::Gaus(x,peaks[i],sqrt(noise*noise+i*exess), kTRUE));
   //  retval+=TMath::Gaus(x,peaks[i],noise, kTRUE);
@@ -272,16 +279,20 @@ Double_t mppc1( Double_t *xx, Double_t *par) // from http://zeus.phys.uconn.edu/
   return retval;
 }
 
-
+// int main()
+// {
+//   FEBDAQMULT("eth1");
+//   return 0;
+// }
 
 void FEBDAQMULT(const char *iface="eth1")
 {
-  if(Init(iface)==0) return;
+  // if(Init(iface)==0) return;
   FEBGUI();
- UpdateConfig();
- fNumberEntry8869->SetLimitValues(0,t->nclients-1);
- for(int feb=0; feb<t->nclients; feb++)  VCXO_Values[feb]=VCXO_Value;
- UpdateBoardMonitor(); 
+  UpdateConfig();
+  fNumberEntry8869->SetLimitValues(0,t->nclients-1);
+  for(int feb=0; feb<t->nclients; feb++)  VCXO_Values[feb]=VCXO_Value;
+  UpdateBoardMonitor(); 
 }
 
 void ConfigSetBit(UChar_t *buffer, UShort_t bitlen, UShort_t bit_index, Bool_t value)
