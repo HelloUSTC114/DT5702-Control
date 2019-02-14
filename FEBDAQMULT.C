@@ -172,7 +172,7 @@ TGraph *gts1[256];
 TH1F *hcprof=0;
 TH2F *hevdisp=0;
 void FillHistos(int truncat);
-  int evs=0; //overall events per DAQ
+int evs=0; //overall events per DAQ
  // int evs_notfirst=0; //overall events per DAQ without very first request
   int evsperrequest=0;
 FEBDTP* t;
@@ -279,12 +279,6 @@ Double_t mppc1( Double_t *xx, Double_t *par) // from http://zeus.phys.uconn.edu/
   return retval;
 }
 
-// int main()
-// {
-//   FEBDAQMULT("eth1");
-//   return 0;
-// }
-
 void FEBDAQMULT(const char *iface="eth1")
 {
   // if(Init(iface)==0) return;
@@ -326,44 +320,56 @@ void SetDstMacByIndex(int i)
 
 void UpdateConfig()
 {
-char bsname[32];
- uint8_t bufFIL[256]; 
+  char bsname[32];
+  uint8_t bufFIL[256]; 
 
-//t->ReadBitStream("CITIROC_SCbitstream_TESTS.txt",bufSCR);
-t->ReadBitStream("CITIROC_PROBEbitstream.txt",bufPMR);
-for(int feb=0; feb<t->nclients; feb++)
-{
-SetDstMacByIndex(feb);
-//t->dstmac[5]=0xff; //Broadcast
-sprintf(bsname,"CITIROC_SC_SN%03d.txt",t->dstmac[5]);
-//if(!(t->ReadBitStream(bsname,bufSCR))) t->ReadBitStream("CITIROC_SC_DEFAULT.txt",bufSCR);
-if(!(t->ReadBitStream(bsname,bufSCR))) t->ReadBitStream("CITIROC_SC_PROFILE1.txt",bufSCR);
-
-
-  *((uint32_t*)(&(bufFIL[0])))=*((uint32_t*)(&(bufSCR[265]))); //copy trigger enable channels from SCR to FIL tregister
+  //t->ReadBitStream("CITIROC_SCbitstream_TESTS.txt",bufSCR);
+  t->ReadBitStream("CITIROC_PROBEbitstream.txt",bufPMR);
+  for(int feb=0; feb<t->nclients; feb++)
+  {
+    SetDstMacByIndex(feb);
+    //t->dstmac[5]=0xff; //Broadcast
+    sprintf(bsname,"CITIROC_SC_SN%03d.txt",t->dstmac[5]);
+    //if(!(t->ReadBitStream(bsname,bufSCR))) t->ReadBitStream("CITIROC_SC_DEFAULT.txt",bufSCR);
+    if(!(t->ReadBitStream(bsname,bufSCR))) t->ReadBitStream("CITIROC_SC_PROFILE1.txt",bufSCR);
 
 
-t->SendCMD(t->dstmac,FEB_SET_RECV,fNumberEntry75->GetNumber(),t->srcmac);
-t->SendCMD(t->dstmac,FEB_WR_SCR,0x0000,bufSCR);
-t->SendCMD(t->dstmac,FEB_WR_PMR,0x0000,bufPMR);
-t->SendCMD(t->dstmac,FEB_WR_FIL,0x0000,bufFIL);
+    *((uint32_t*)(&(bufFIL[0])))=*((uint32_t*)(&(bufSCR[265]))); //copy trigger enable channels from SCR to FIL tregister
 
-if(feb==BoardToMon)  {
-  for(int i=265; i<265+32;i++)
-  if(ConfigGetBit(bufSCR,1144,i)) fChanEnaTrig[i-265]->SetOn(); else fChanEnaTrig[i-265]->SetOn(kFALSE);
-  if(ConfigGetBit(bufSCR,1144,1139)) fChanEnaTrig[32]->SetOn(); else fChanEnaTrig[32]->SetOn(kFALSE);
-  for(int i=0; i<32;i++)
-  if(ConfigGetBit(bufSCR,1144,633+i*15)) fChanEnaAmp[i]->SetOn(kFALSE); else fChanEnaAmp[i]->SetOn();
-  fChanEnaAmp[33]->SetOn(kFALSE);fChanEnaAmp[32]->SetOn(kFALSE);
-  for(int i=0; i<32;i++)
-  if(ConfigGetBit(bufPMR,224,96+i)) fChanProbe[i]->SetOn(); else fChanProbe[i]->SetOn(kFALSE);
-  fNumberEntry755->SetNumber(GetThresholdDAC1());
-  for(int i=0; i<32;i++) fChanGain[i]->SetNumber(ConfigGetGain(i));
-  for(int i=0; i<32;i++) fChanBias[i]->SetNumber(ConfigGetBias(i));
 
-      }
-}
-//fNumberEntry755->SetNumber();
+    t->SendCMD(t->dstmac,FEB_SET_RECV,fNumberEntry75->GetNumber(),t->srcmac);
+    t->SendCMD(t->dstmac,FEB_WR_SCR,0x0000,bufSCR);
+    t->SendCMD(t->dstmac,FEB_WR_PMR,0x0000,bufPMR);
+    t->SendCMD(t->dstmac,FEB_WR_FIL,0x0000,bufFIL);
+
+    if(feb==BoardToMon)
+    {
+      for(int i=265; i<265+32;i++)
+        if(ConfigGetBit(bufSCR,1144,i)) fChanEnaTrig[i-265]->SetOn();
+        else fChanEnaTrig[i-265]->SetOn(kFALSE);
+
+      if(ConfigGetBit(bufSCR,1144,1139)) fChanEnaTrig[32]->SetOn();
+      else fChanEnaTrig[32]->SetOn(kFALSE);
+
+      for(int i=0; i<32;i++)
+        if(ConfigGetBit(bufSCR,1144,633+i*15)) fChanEnaAmp[i]->SetOn(kFALSE);
+        else fChanEnaAmp[i]->SetOn();
+
+      fChanEnaAmp[33]->SetOn(kFALSE);
+      fChanEnaAmp[32]->SetOn(kFALSE);
+      for(int i=0; i<32;i++)
+        if(ConfigGetBit(bufPMR,224,96+i)) fChanProbe[i]->SetOn();
+        else fChanProbe[i]->SetOn(kFALSE);
+
+      fNumberEntry755->SetNumber(GetThresholdDAC1());
+
+      for(int i=0; i<32;i++)
+        fChanGain[i]->SetNumber(ConfigGetGain(i));
+      for(int i=0; i<32;i++)
+        fChanBias[i]->SetNumber(ConfigGetBias(i));
+    }
+  }
+  //fNumberEntry755->SetNumber();
 }
 
 UChar_t ConfigGetGain(int chan)

@@ -80,49 +80,49 @@ typedef struct {
 
 
 
-    class FEBDTP : public TObject
-  {
-  public:
+class FEBDTP : public TObject
+{
+public:
+  FEBDTP(){}; // default constructor
+  FEBDTP(const char * iface){Init(iface);};  //main constructor
+  ~FEBDTP(){ close(sockfd_w); close(sockfd_r);} //destructor
 
-FEBDTP_PKT gpkt;
-UChar_t srcmac[6]={0,0,0,0,0,0};
-UChar_t dstmac[6]={0x00,0x60,0x37,0x12,0x34,0x00}; //base mac for FEBs, last byte 0->255
-UChar_t brcmac[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
- int nclients=0;
- UChar_t macs[256][6]; //list of detected clients
- int Verbose=0;
+  FEBDTP_PKT gpkt;
+  UChar_t srcmac[6]={0,0,0,0,0,0};
+  UChar_t dstmac[6]={0x00,0x60,0x37,0x12,0x34,0x00}; //base mac for FEBs, last byte 0->255
+  UChar_t brcmac[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+  int nclients=0;
+  UChar_t macs[256][6]; //list of detected clients
+  int Verbose=0;
 
-unsigned short VCXO=500; 
-char ifName[IFNAMSIZ];
-int sockfd_w=-1; 
-int sockfd_r=-1;
-       struct timeval tv;
-void (*fPacketHandler)(int)=0;
+  unsigned short VCXO=500; 
+  char ifName[IFNAMSIZ];
+  int sockfd_w=-1; 
+  int sockfd_r=-1;
+  struct timeval tv;
 
-    FEBDTP(){}; // default constructor
-    FEBDTP(const char * iface){Init(iface);};  //main constructor
-    ~FEBDTP(){ close(sockfd_w); close(sockfd_r);} //destructor
-int    Init(const char * iface); 
-    
+      
+  void (*fPacketHandler)(int)=0;
+  int    Init(const char * iface); 
 
-void Init_FEBDTP_pkt(FEBDTP_PKT *pkt, UChar_t* src, UChar_t* dst);
-void Init_FEBDTP_pkt(FEBDTP_PKT *pkt);
-void Init_FEBDTP_pkt();
-int Send_pkt(FEBDTP_PKT *pkt, int len, int timeout_us=50000);
-int SendCMD(UChar_t* mac, UShort_t cmd, UShort_t reg, UChar_t* buf);
-//UShort_t RecvAnsw(Int_t timeout); //wait for <timeout> ms, returns either reply code, or FFFF in case of timeout
-void Print_gpkt(int truncat=MAXPACKLEN);
-void Print_gpkt_evts(int truncat=MAXPACKLEN);
-void CMD_stoa(UShort_t cmd, char* str); //convert CMD code to name string
-int ScanClients(); // Scan MAC addresses of FEBs within reach
-int ReadBitStream(const char * fname, UChar_t* buf); // read CITIROC SC bitstream into the buffer
-int WriteBitStream(const char * fname, UChar_t* buf, int bitlen); // write CITIROC SC bitstream into file
-int WriteBitStreamAnnotated(const char * fname, UChar_t* buf, int bitlen); // write CITIROC SC bitstream into file
-void WriteLVBitStream(const char * fname, UChar_t* buf, Bool_t rev=false); // write CITIROC SC bitstream from the buffer, buf[MAXPACKLEN], to LabView setup file
-void ReadLVBitStream(const char * fname, UChar_t* buf, Bool_t rev=false); // write CITIROC SC bitstream from the buffer, buf[MAXPACKLEN], to LabView setup file
-void setPacketHandler( void (*fhandler)(int)=0);
-void PrintMacTable();
-    
+  void Init_FEBDTP_pkt(FEBDTP_PKT *pkt, UChar_t* src, UChar_t* dst);
+  void Init_FEBDTP_pkt(FEBDTP_PKT *pkt);
+  void Init_FEBDTP_pkt();
+  int Send_pkt(FEBDTP_PKT *pkt, int len, int timeout_us=50000);
+  int SendCMD(UChar_t* mac, UShort_t cmd, UShort_t reg, UChar_t* buf);
+  //UShort_t RecvAnsw(Int_t timeout); //wait for <timeout> ms, returns either reply code, or FFFF in case of timeout
+  void Print_gpkt(int truncat=MAXPACKLEN);
+  void Print_gpkt_evts(int truncat=MAXPACKLEN);
+  void CMD_stoa(UShort_t cmd, char* str); //convert CMD code to name string
+  int ScanClients(); // Scan MAC addresses of FEBs within reach
+  int ReadBitStream(const char * fname, UChar_t* buf); // read CITIROC SC bitstream into the buffer
+  int WriteBitStream(const char * fname, UChar_t* buf, int bitlen); // write CITIROC SC bitstream into file
+  int WriteBitStreamAnnotated(const char * fname, UChar_t* buf, int bitlen); // write CITIROC SC bitstream into file
+  void WriteLVBitStream(const char * fname, UChar_t* buf, Bool_t rev=false); // write CITIROC SC bitstream from the buffer, buf[MAXPACKLEN], to LabView setup file
+  void ReadLVBitStream(const char * fname, UChar_t* buf, Bool_t rev=false); // write CITIROC SC bitstream from the buffer, buf[MAXPACKLEN], to LabView setup file
+  void setPacketHandler( void (*fhandler)(int)=0);
+  void PrintMacTable();
+      
     ClassDef(FEBDTP, 1); // FEBDTP
   };
 
