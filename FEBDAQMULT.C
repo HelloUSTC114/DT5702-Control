@@ -374,45 +374,44 @@ void UpdateConfig()
 
 UChar_t ConfigGetGain(int chan)
 {
- UChar_t val=0;
- for(int b=0;b<6;b++)
- {
-   val=val << 1;
-   if(ConfigGetBit(bufSCR,1144,619+chan*15+b)) val=val+1;
- } 
- return val;
+  UChar_t val=0;
+  for(int b=0;b<6;b++)
+  {
+    val=val << 1;
+    if(ConfigGetBit(bufSCR,1144,619+chan*15+b)) val=val+1;
+  } 
+  return val;
 }
 
 UChar_t ConfigGetBias(int chan)
 {
- UChar_t val=0;
- for(int b=0;b<8;b++)
- {
-   val=val << 1;
-   if(ConfigGetBit(bufSCR,1144,331+chan*9+b)) val=val+1;
- } 
- return val;
+  UChar_t val=0;
+  for(int b=0;b<8;b++)
+  {
+    val=val << 1;
+    if(ConfigGetBit(bufSCR,1144,331+chan*9+b)) val=val+1;
+  } 
+  return val;
 }
 
 void ConfigSetGain(int chan, UChar_t val)
 {
   UChar_t mask=1<<5;
- for(int b=0;b<6;b++)
- {
-   if((val & mask)>0) ConfigSetBit(bufSCR,1144,619+chan*15+b,kTRUE); else ConfigSetBit(bufSCR,1144,619+chan*15+b,kFALSE);
-   mask=mask>>1;
- } 
+  for(int b=0;b<6;b++)
+  {
+    if((val & mask)>0) ConfigSetBit(bufSCR,1144,619+chan*15+b,kTRUE); else ConfigSetBit(bufSCR,1144,619+chan*15+b,kFALSE);
+    mask=mask>>1;
+  } 
   
 }
 
 void ConfigSetBias(int chan, UChar_t val)
 {
   UChar_t mask=1<<7;
- for(int b=0;b<8;b++)
- {
-   if((val & mask)>0) ConfigSetBit(bufSCR,1144,331+chan*9+b,kTRUE); else ConfigSetBit(bufSCR,1144,331+chan*9+b,kFALSE);
-   mask=mask>>1;
- } 
+  for(int b=0;b<8;b++){
+    if((val & mask)>0) ConfigSetBit(bufSCR,1144,331+chan*9+b,kTRUE); else ConfigSetBit(bufSCR,1144,331+chan*9+b,kFALSE);
+    mask=mask>>1;
+  } 
 
 }
 
@@ -420,16 +419,16 @@ void ConfigSetBias(int chan, UChar_t val)
 
 void PrintConfig(UChar_t *buffer, UShort_t bitlen)
 {
-    UChar_t byte;
+  UChar_t byte;
   UChar_t mask;
   for(int i=0; i<bitlen;i++)
- {
-  byte=buffer[(bitlen-1-i)/8];
-  mask= 1 << (7-i%8);
-  byte=byte & mask;
-  if(byte==0) printf("0"); else printf("1");
- }
- printf("\n"); 
+  {
+    byte=buffer[(bitlen-1-i)/8];
+    mask= 1 << (7-i%8);
+    byte=byte & mask;
+    if(byte==0) printf("0"); else printf("1");
+  }
+  printf("\n"); 
 } 
 
 void SendConfig()
@@ -512,15 +511,15 @@ Bool_t NOts0_mon=false,NOts1_mon=false;
 
 void RescanNet()
 {
- t->nclients=0;
- if(t->ScanClients()==0) {printf("No clients connected, exiting\n"); return;}; 
- t->PrintMacTable();
- t->VCXO=500;
- for(int feb=0; feb<t->nclients; feb++)  { ts0_ref_AVE[t->macs[feb][5]]=0;ts0_ref_IND[t->macs[feb][5]]=0; }
- UpdateConfig();
- fNumberEntry8869->SetLimitValues(0,t->nclients-1);
- for(int feb=0; feb<t->nclients; feb++)  VCXO_Values[feb]=VCXO_Value;
- UpdateBoardMonitor(); 
+  t->nclients=0;
+  if(t->ScanClients()==0) {printf("No clients connected, exiting\n"); return;}; 
+  t->PrintMacTable();
+  t->VCXO=500;
+  for(int feb=0; feb<t->nclients; feb++)  { ts0_ref_AVE[t->macs[feb][5]]=0;ts0_ref_IND[t->macs[feb][5]]=0; }
+  UpdateConfig();
+  fNumberEntry8869->SetLimitValues(0,t->nclients-1);
+  for(int feb=0; feb<t->nclients; feb++)  VCXO_Values[feb]=VCXO_Value;
+  UpdateBoardMonitor(); 
  
 }
 
@@ -528,25 +527,25 @@ void RescanNet()
 int Init(const char *iface="eth1")
 {
   t=new FEBDTP(iface);
- if(t->ScanClients()==0) {printf("No clients connected, exiting\n"); return 0;};
- t->PrintMacTable(); 
- 
- t->VCXO=500;
- for(int feb=0; feb<t->nclients; feb++)  { ts0_ref_AVE[t->macs[feb][5]]=0;ts0_ref_IND[t->macs[feb][5]]=0; }
+  if(t->ScanClients()==0) {printf("No clients connected, exiting\n"); return 0;};
+  t->PrintMacTable(); 
 
- t->setPacketHandler(&FillHistos);
-   char str1[32];
+  t->VCXO=500;
+  for(int feb=0; feb<t->nclients; feb++)  { ts0_ref_AVE[t->macs[feb][5]]=0;ts0_ref_IND[t->macs[feb][5]]=0; }
+
+  t->setPacketHandler(&FillHistos);
+  char str1[32];
   char str2[32];
   SetDstMacByIndex(0);
   evs=0;
   for(int i=0;i<32;i++) {
-      sprintf(str1,"h%d",i);
-      sprintf(str2,"ADC # %d",i);
-      hst[i]=new TH1F(str1,str2,820,0,4100);
-      hst[i]->GetXaxis()->SetTitle("ADC value");
-      hst[i]->GetYaxis()->SetTitle("Events");
+    sprintf(str1,"h%d",i);
+    sprintf(str2,"ADC # %d",i);
+    hst[i]=new TH1F(str1,str2,820,0,4100);
+    hst[i]->GetXaxis()->SetTitle("ADC value");
+    hst[i]->GetYaxis()->SetTitle("Events");
 
-    }
+  }
   for(int i=0;i<256;i++) gts0[i]=new TGraph();
   for(int i=0;i<256;i++) gts1[i]=new TGraph();
   hcprof=new TH1F("hcprof","Channel profile",32,0,32);
@@ -572,10 +571,10 @@ int Init(const char *iface="eth1")
   tr->Branch("ts1",&ts1,"ts1/i");
   tr->Branch("ts0_ref",&ts0_ref,"ts0_ref/i");
   tr->Branch("ts1_ref",&ts1_ref,"ts1_ref/i");
- 
-   BenchMark=new TBenchmark();
-   BenchMark->Start("Poll");
-return 1;
+
+  BenchMark=new TBenchmark();
+  BenchMark->Start("Poll");
+  return 1;
 }
 
 UInt_t overwritten=0;
@@ -586,132 +585,132 @@ void FillHistos(int truncat)  // hook called by libFEBDTP when event is received
 {
   int jj;
   int kk;
-//UInt_t T0,T1;
-UShort_t adc;
-int evspack=0;
-UInt_t tt0,tt1;
-UChar_t ls2b0,ls2b1; //least sig 2 bits
+  //UInt_t T0,T1;
+  UShort_t adc;
+  int evspack=0;
+  UInt_t tt0,tt1;
+  UChar_t ls2b0,ls2b1; //least sig 2 bits
 
-        jj=0;
-        while(jj<truncat-18)
-         {
-        //printf(" Remaining events: %d\n",(t->gpkt).REG);
-        //printf("Flags: 0x%08x ",*(UInt_t*)(&(t->gpkt).Data[jj]));
-        overwritten=*(UShort_t*)(&(t->gpkt).Data[jj]); 
-	jj=jj+2;
-        lostinfpga=*(UShort_t*)(&(t->gpkt).Data[jj]); 
-	jj=jj+2;
-        ts0=*(UInt_t*)(&(t->gpkt).Data[jj]); jj=jj+4; 
-        ts1=*(UInt_t*)(&(t->gpkt).Data[jj]); jj=jj+4; 
-//	printf("T0=%u ns, T1=%u ns \n",ts0,ts1);
-        ls2b0=ts0 & 0x00000003;
-        ls2b1=ts1 & 0x00000003;
-        tt0=(ts0 & 0x3fffffff) >>2;
-        tt1=(ts1 & 0x3fffffff) >>2;
-        tt0=(GrayToBin(tt0) << 2) | ls2b0;
-        tt1=(GrayToBin(tt1) << 2) | ls2b1;
-        tt0=tt0+5;//IK: correction based on phase drift w.r.t GPS
-        tt1=tt1+5; //IK: correction based on phase drift w.r.t GPS
-        NOts0=((ts0 & 0x40000000)>0); // check overflow bit
-        NOts1=((ts1 & 0x40000000)>0);
-        if((ts0 & 0x80000000)>0) {ts0=0x0; ts0_ref=tt0; ts0_ref_MEM[t->dstmac[5]]=tt0; 
-                                  ts0_ref_AVE[t->dstmac[5]]=ts0_ref_AVE[t->dstmac[5]]+ts0_ref_MEM[t->dstmac[5]]; (ts0_ref_IND[t->dstmac[5]])++;} 
-        else { ts0=tt0; ts0_ref=ts0_ref_MEM[t->dstmac[5]]; }
-        if((ts1 & 0x80000000)>0) {ts1=0x0; ts1_ref=tt1; ts1_ref_MEM[t->dstmac[5]]=tt1;} else { ts1=tt1; ts1_ref=ts1_ref_MEM[t->dstmac[5]]; }
+  jj=0;
+  while(jj<truncat-18)
+  {
+    //printf(" Remaining events: %d\n",(t->gpkt).REG);
+    //printf("Flags: 0x%08x ",*(UInt_t*)(&(t->gpkt).Data[jj]));
+    overwritten=*(UShort_t*)(&(t->gpkt).Data[jj]); 
+    jj=jj+2;
+    lostinfpga=*(UShort_t*)(&(t->gpkt).Data[jj]); 
+    jj=jj+2;
+    ts0=*(UInt_t*)(&(t->gpkt).Data[jj]); jj=jj+4; 
+    ts1=*(UInt_t*)(&(t->gpkt).Data[jj]); jj=jj+4; 
+    //	printf("T0=%u ns, T1=%u ns \n",ts0,ts1);
+    ls2b0=ts0 & 0x00000003;
+    ls2b1=ts1 & 0x00000003;
+    tt0=(ts0 & 0x3fffffff) >>2;
+    tt1=(ts1 & 0x3fffffff) >>2;
+    tt0=(GrayToBin(tt0) << 2) | ls2b0;
+    tt1=(GrayToBin(tt1) << 2) | ls2b1;
+    tt0=tt0+5;//IK: correction based on phase drift w.r.t GPS
+    tt1=tt1+5; //IK: correction based on phase drift w.r.t GPS
+    NOts0=((ts0 & 0x40000000)>0); // check overflow bit
+    NOts1=((ts1 & 0x40000000)>0);
+    if((ts0 & 0x80000000)>0) {ts0=0x0; ts0_ref=tt0; ts0_ref_MEM[t->dstmac[5]]=tt0; 
+                              ts0_ref_AVE[t->dstmac[5]]=ts0_ref_AVE[t->dstmac[5]]+ts0_ref_MEM[t->dstmac[5]]; (ts0_ref_IND[t->dstmac[5]])++;} 
+    else { ts0=tt0; ts0_ref=ts0_ref_MEM[t->dstmac[5]]; }
+    if((ts1 & 0x80000000)>0) {ts1=0x0; ts1_ref=tt1; ts1_ref_MEM[t->dstmac[5]]=tt1;} else { ts1=tt1; ts1_ref=ts1_ref_MEM[t->dstmac[5]]; }
 
-	if(t->Verbose) printf("T0=%u ns, T1=%u ns T0_ref=%u ns  T1_ref=%u ns \n",ts0,ts1,ts0_ref,ts1_ref);
-//	printf(" ADC[32]:\n"); 
+    if(t->Verbose) printf("T0=%u ns, T1=%u ns T0_ref=%u ns  T1_ref=%u ns \n",ts0,ts1,ts0_ref,ts1_ref);
+    //	printf(" ADC[32]:\n"); 
 
-        for(kk=0; kk<32; kk++) if (CHAN_MASK & (1<<kk))
-		{
-		adc=*(UShort_t*)(&(t->gpkt).Data[jj]); jj++; jj++;  
-//		printf("%04u ",adc);
-	        if(t->dstmac[5] == t->macs[BoardToMon][5])
-			{ 
-				hst[kk]->Fill(adc);
-				hcprof->Fill(kk,adc);
-                                if(fUpdateHisto->IsOn() && fTab683->GetCurrent()==6) {   
-                                hevdisp->SetBinContent(kk,NEVDISP,adc);
-				}
-			}
-                chg[kk]=adc;
-		} //if(jj>=(truncat-18)) return;}
-                else {chg[kk]=0; jj+=2;}
-
-                                if(t->dstmac[5] == t->macs[BoardToMon][5]) 
- 				if(fUpdateHisto->IsOn() && fTab683->GetCurrent()==6) {   
-				 for(int evi=1; evi<=NEVDISP;evi++) for(kk=0; kk<32; kk++)
-				  {
-                            		hevdisp->SetBinContent(kk,evi-1,hevdisp->GetBinContent(kk,evi));
-				  }
-				}
-  
- //       printf("\n");
-        mac5=t->dstmac[5];
-      // printf("Filling tree with mac5=0x%02x\n",mac5);
-       gts0[mac5]->SetPoint(gts0[mac5]->GetN(),gts0[mac5]->GetN(),ts0_ref-1e9);
-       if(ts1!=0) gts1[mac5]->SetPoint(gts1[mac5]->GetN(),gts1[mac5]->GetN(),ts1);
-        tr->Fill();
-if(t->dstmac[5] == t->macs[BoardToMon][5])
-{
-        evs++;
-        evspack++; 
-        evsperrequest++; 
-        total_lost+=lostinfpga; 
-        ts0_ref_mon=ts0_ref;  
-        ts1_ref_mon=ts1_ref;
-        NOts0_mon=NOts0;  
-        NOts1_mon=NOts1;  
-}
+    for(kk=0; kk<32; kk++) if (CHAN_MASK & (1<<kk))
+    {
+      adc=*(UShort_t*)(&(t->gpkt).Data[jj]); jj++; jj++;  
+      //		printf("%04u ",adc);
+      if(t->dstmac[5] == t->macs[BoardToMon][5])
+      { 
+        hst[kk]->Fill(adc);
+        hcprof->Fill(kk,adc);
+        if(fUpdateHisto->IsOn() && fTab683->GetCurrent()==6) {   
+          hevdisp->SetBinContent(kk,NEVDISP,adc);
         }
+      }
+      chg[kk]=adc;
+    } //if(jj>=(truncat-18)) return;}
+    else {chg[kk]=0; jj+=2;}
+
+    if(t->dstmac[5] == t->macs[BoardToMon][5]) 
+      if(fUpdateHisto->IsOn() && fTab683->GetCurrent()==6) {   
+        for(int evi=1; evi<=NEVDISP;evi++) for(kk=0; kk<32; kk++)
+        {
+          hevdisp->SetBinContent(kk,evi-1,hevdisp->GetBinContent(kk,evi));
+        }
+      }
+
+    //       printf("\n");
+    mac5=t->dstmac[5];
+    // printf("Filling tree with mac5=0x%02x\n",mac5);
+    gts0[mac5]->SetPoint(gts0[mac5]->GetN(),gts0[mac5]->GetN(),ts0_ref-1e9);
+    if(ts1!=0) gts1[mac5]->SetPoint(gts1[mac5]->GetN(),gts1[mac5]->GetN(),ts1);
+    tr->Fill();
+    if(t->dstmac[5] == t->macs[BoardToMon][5])
+    {
+      evs++;
+      evspack++; 
+      evsperrequest++; 
+      total_lost+=lostinfpga; 
+      ts0_ref_mon=ts0_ref;  
+      ts1_ref_mon=ts1_ref;
+      NOts0_mon=NOts0;  
+      NOts1_mon=NOts1;  
+    }
+  }
   //        printf("Packet: events %d\n", evspack);
 	  
 }
 
 void UpdateHisto()
 {
-    chan=fNumberEntry886->GetNumber();
-    for(int y=0;y<8;y++) for(int x=0;x<4;x++) {c->cd(y*4+x+1); gPad->SetLogy(); hst[y*4+x]->Draw();}
-    c->Update();
-    c1->cd(); hst[chan]->Draw();
-    c1->Update();
-    c3->cd(1);
-    gts0[t->macs[0][5]]->Draw("AL");
-    gts0[t->macs[0][5]]->GetHistogram()->GetYaxis()->SetRangeUser(-100,100);
-    gts0[t->macs[0][5]]->GetHistogram()->GetXaxis()->SetTitle("Event number");
-    gts0[t->macs[0][5]]->GetHistogram()->GetYaxis()->SetTitle("TS0 period deviation from 1s, ns");
- for(int feb=0; feb<t->nclients; feb++)  { gts0[t->macs[feb][5]]->Draw("sameL"); }    
-    c3->cd(2);
-    gts1[t->macs[0][5]]->Draw("AL");
-     gts1[t->macs[0][5]]->GetHistogram()->GetXaxis()->SetTitle("Event number");
-    gts1[t->macs[0][5]]->GetHistogram()->GetYaxis()->SetTitle("TS1, ns");
-   //gts0[t->macs[0][5]]->GetHistogram()->GetYaxis()->SetRangeUser(-100,100);
- for(int feb=0; feb<t->nclients; feb++)  { gts1[t->macs[feb][5]]->Draw("sameL"); }    
-    c3->Update();
-    c4->cd();
-    hcprof->Draw("hist");
-    c4->Update();
-    c5->cd();
-    grevrate->Draw("AL");
-    grevrate->GetHistogram()->GetXaxis()->SetTitle("Poll Nr.");
-    grevrate->GetHistogram()->GetYaxis()->SetTitle("Event rate, kHz");
-    c5->Update();
-    c6->cd();
-    hevdisp->Draw("colz");
-    c6->Update();
+  chan=fNumberEntry886->GetNumber();
+  for(int y=0;y<8;y++) for(int x=0;x<4;x++) {c->cd(y*4+x+1); gPad->SetLogy(); hst[y*4+x]->Draw();}
+  c->Update();
+  c1->cd(); hst[chan]->Draw();
+  c1->Update();
+  c3->cd(1);
+  gts0[t->macs[0][5]]->Draw("AL");
+  gts0[t->macs[0][5]]->GetHistogram()->GetYaxis()->SetRangeUser(-100,100);
+  gts0[t->macs[0][5]]->GetHistogram()->GetXaxis()->SetTitle("Event number");
+  gts0[t->macs[0][5]]->GetHistogram()->GetYaxis()->SetTitle("TS0 period deviation from 1s, ns");
+  for(int feb=0; feb<t->nclients; feb++)  { gts0[t->macs[feb][5]]->Draw("sameL"); }    
+  c3->cd(2);
+  gts1[t->macs[0][5]]->Draw("AL");
+    gts1[t->macs[0][5]]->GetHistogram()->GetXaxis()->SetTitle("Event number");
+  gts1[t->macs[0][5]]->GetHistogram()->GetYaxis()->SetTitle("TS1, ns");
+  //gts0[t->macs[0][5]]->GetHistogram()->GetYaxis()->SetRangeUser(-100,100);
+  for(int feb=0; feb<t->nclients; feb++)  { gts1[t->macs[feb][5]]->Draw("sameL"); }    
+  c3->Update();
+  c4->cd();
+  hcprof->Draw("hist");
+  c4->Update();
+  c5->cd();
+  grevrate->Draw("AL");
+  grevrate->GetHistogram()->GetXaxis()->SetTitle("Poll Nr.");
+  grevrate->GetHistogram()->GetYaxis()->SetTitle("Event rate, kHz");
+  c5->Update();
+  c6->cd();
+  hevdisp->Draw("colz");
+  c6->Update();
 
 }
 
 void StopDAQ()
 {
-t->dstmac[5]=0xff; //Broadcast
+  t->dstmac[5]=0xff; //Broadcast
   t->SendCMD(t->dstmac,FEB_GEN_INIT,0,buf);  
 }
 
 
 void StartDAQ(int nev=0)
 {
-t->dstmac[5]=0xff; //Broadcast
+  t->dstmac[5]=0xff; //Broadcast
   t->SendCMD(t->dstmac,FEB_GEN_INIT,1,buf); //reset buffer
   t->SendCMD(t->dstmac,FEB_GEN_INIT,2,buf); //set DAQ_Enable flag on FEB
   DAQ(nev);
