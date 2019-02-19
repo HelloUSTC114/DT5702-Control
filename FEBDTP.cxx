@@ -13,7 +13,7 @@
 
 #include "TObject.h"
 
-#include "FEBDTP.hxx"
+#include "FEBDTP.h"
 
 
 

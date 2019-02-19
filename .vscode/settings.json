@@ -6,6 +6,6 @@
         "time.h": "c",
         "tgbuttongroup.h": "c",
         "tgdockableframe.h": "c",
-        "febdtp.hxx": "c"
+        "FEBDTP.h": "c"
     }
 }

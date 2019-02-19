@@ -125,7 +125,7 @@
 #include "time.h"
 #include <sys/timeb.h>
 
-#include "FEBDTP.hxx"
+#include "FEBDTP.h"
 
 #define maxpe 10 //max number of photoelectrons to use in the fit
 int NEVDISP=200; //number of lines in the waterfall event display
@@ -1623,22 +1623,22 @@ void AcquireGainCalibrationData(int nevc=10000)
   CHAN_MASK= (3 << (2*15));
   for(int sci=0; sci<16; sci++)
   {
-  for(i=0; i<32;i++) //reset all chan to OFF
-     {
-     fChanEnaAmp[i]->SetOn(kFALSE); 
-     ConfigSetBit(bufSCR,1144,633+i*15,1); 
-     }
+    for(i=0; i<32;i++) //reset all chan to OFF
+    {
+      fChanEnaAmp[i]->SetOn(kFALSE); 
+      ConfigSetBit(bufSCR,1144,633+i*15,1); 
+    }
     i=sci*2;
     fChanEnaAmp[i]->SetOn(); 
     ConfigSetBit(bufSCR,1144,633+i*15,0);    
     i++;
     fChanEnaAmp[i]->SetOn(); 
     ConfigSetBit(bufSCR,1144,633+i*15,0);    
-  t->SendCMD(t->dstmac,FEB_WR_SCR,0x0000,bufSCR);
- // StartDAQ(nevc/100); ///for pedestal
+    t->SendCMD(t->dstmac,FEB_WR_SCR,0x0000,bufSCR);
+    // StartDAQ(nevc/100); ///for pedestal
     CHAN_MASK= (3 << (2*sci));
     printf("CHAN_MASK=%08x\n",CHAN_MASK);
-  StartDAQ(nevc);
+    StartDAQ(nevc);
 
   }
   CHAN_MASK=cmaskbefore; //restore
@@ -1651,22 +1651,22 @@ void AcquirePedestalCalibrationData(int nevc=10000)
   CHAN_MASK= (3 << (2*15));
   for(int sci=0; sci<16; sci++)
   {
-  for(i=0; i<32;i++) //reset all chan to OFF
-     {
-     fChanEnaAmp[i]->SetOn(kFALSE); 
-     ConfigSetBit(bufSCR,1144,633+i*15,1); 
-     }
+    for(i=0; i<32;i++) //reset all chan to OFF
+    {
+      fChanEnaAmp[i]->SetOn(kFALSE); 
+      ConfigSetBit(bufSCR,1144,633+i*15,1); 
+    }
     i=sci*2;
     fChanEnaAmp[i]->SetOn(); 
     ConfigSetBit(bufSCR,1144,633+i*15,0);    
     i++;
     fChanEnaAmp[i]->SetOn(); 
     ConfigSetBit(bufSCR,1144,633+i*15,0);    
-  t->SendCMD(t->dstmac,FEB_WR_SCR,0x0000,bufSCR);
-  StartDAQ(nevc); ///for pedestal
+    t->SendCMD(t->dstmac,FEB_WR_SCR,0x0000,bufSCR);
+    StartDAQ(nevc); ///for pedestal
     CHAN_MASK= (3 << (2*sci));
-  //  printf("CHAN_MASK=%08x\n",CHAN_MASK);
- // StartDAQ(nevc);
+    //  printf("CHAN_MASK=%08x\n",CHAN_MASK);
+    // StartDAQ(nevc);
 
   }
   CHAN_MASK=cmaskbefore; //restore
