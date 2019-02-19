@@ -421,13 +421,6 @@ void FEBDTP::Print_gpkt(int truncat)
 
 void FEBDTP::Print_gpkt_evts(int truncat)
 {
-  /*typedef struct {
-    UChar_t flags; //flags defining event type, 1=T0 reset, 2=T1 reset or 4=scintillator trigger
-    UInt_t T0;
-    UInt_t T1;
-    UShort_t adc[32]; //adc data on 32 channels
-  } Event_t;
-  */
 
   int jj;
   int kk;

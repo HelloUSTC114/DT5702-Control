@@ -72,16 +72,6 @@ typedef struct {
 } FEBDTP_PKT; // packet total length 64 bytes, 42 useful data
 
 
-/*typedef struct {
-	UChar_t flags; //flags defining event type, 1=T0 reset, 2=T1 reset or 4=scintillator trigger
-	UInt_t T0;
-	UInt_t T1;
-	UShort_t adc[32]; //adc data on 32 channels
-} Event_t;
-*/
-
-
-
 class FEBDTP : public TObject
 {
 public:
