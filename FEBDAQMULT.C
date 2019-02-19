@@ -201,7 +201,7 @@ UChar_t ConfigGetBias(int chan);
 void ConfigSetGain(int chan, UChar_t val);
 void ConfigSetBias(int chan, UChar_t val);
 void ConfigSetFIL(uint32_t mask1, uint32_t mask2, uint8_t majority); 
- 
+
 UInt_t GrayToBin(UInt_t n)    // Gray code to Binary code
 {
   UInt_t res=0;

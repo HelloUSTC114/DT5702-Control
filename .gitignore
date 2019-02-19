@@ -1,0 +1,6 @@
+FEBDTP_Dict_rdict.pcm
+FEBDTP_Dict.cxx
+*.o
+*.so
+*.root
+test
