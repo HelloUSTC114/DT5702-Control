@@ -4,3 +4,5 @@ FEBDTP_Dict.cxx
 *.so
 *.root
 test
+.vscode/*
+.vscode
