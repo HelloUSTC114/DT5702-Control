@@ -6,3 +6,6 @@ FEBDTP_Dict.cxx
 test
 .vscode/*
 .vscode
+*.pdf
+Data/*
+Data

@@ -1,24 +1,30 @@
-#include "../FEBDAQMULT.C"
+#include "FEBDAQMULT.C"
 #include <string>
 using namespace std;
 
 void CheckGain(const char * iface = "enp5s0f0")
 {
+    FEBDAQMULT(iface);
     UpdateConfig();
+    HVON();
 
     for(int bias:{0, 30, 60, 90, 120, 150, 180, 210, 240})      // Set different bias
     {
         fChanEnaTrig[32] -> SetOn();
-        fChanEnaTrig[32] -> SetOn(kFALSE);
+        // fChanEnaTrig[32] -> SetOn(kFALSE);
         Reset();
         SendConfig();
+        gSystem -> ProcessEvents();
+        gSystem->Sleep(1000);
         for (int i = 0; i < 32; i++)    // Set bias and set amplifier
         {
             fChanBias[i]->SetNumber(bias);
-            fChanGain[i]->SetNumber(30);
+            fChanGain[i]->SetNumber(64);
             fChanEnaTrig[i] -> SetOn(kFALSE);
         }
         SendConfig();
+        gSystem -> ProcessEvents();
+        gSystem->Sleep(1000);
 
         for(int group = 0; group < 16; group++)
         {
@@ -34,16 +40,18 @@ void CheckGain(const char * iface = "enp5s0f0")
             }
             Reset();
             SendConfig();
+            gSystem -> ProcessEvents();
+            gSystem->Sleep(1000);
 
             StartDAQ(10000);
 
             string filename1 = (string) "Bias-" + to_string(bias) + "Ch-" + to_string(ch1);
             string filename2 = (string) "Bias-" + to_string(bias) + "Ch-" + to_string(ch2);
 
-            hst[ch1]->SaveAs((filename1 + ".pdf").c_str);
-            hst[ch1]->SaveAs((filename1 + ".root").c_str);
-            hst[ch2]->SaveAs((filename2 + ".pdf").c_str);
-            hst[ch2]->SaveAs((filename2 + ".root").c_str);
+            hst[ch1]->SaveAs((filename1 + ".pdf").c_str());
+            hst[ch1]->SaveAs((filename1 + ".root").c_str());
+            hst[ch2]->SaveAs((filename2 + ".pdf").c_str());
+            hst[ch2]->SaveAs((filename2 + ".root").c_str());
         }
     }
 }
