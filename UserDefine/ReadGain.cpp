@@ -29,10 +29,7 @@ void ReadGain(int ch)
 
         string HistName = (string)"h" + sCh;
         auto h_temp = (TH1F*) file -> Get(HistName.c_str());
-<<<<<<< HEAD
 	cout << "HistName: " << HistName << endl;
-=======
->>>>>>> c810a562a957582f60454771887a9b8c553c2e30
         c -> cd();
 	if(!h_temp) continue;
         h_temp -> Draw();
