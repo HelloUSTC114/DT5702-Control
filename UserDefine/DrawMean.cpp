@@ -48,5 +48,6 @@ void DrawMean()
     c -> cd();
     mg -> Draw("PMC PLC ALP*");
     mg -> SetName("mg");
+    mg -> SaveAs("Result.root");
     c -> BuildLegend();
 }
