@@ -11,23 +11,27 @@ void ReadGain(int ch)
 {
     string sCh = to_string(ch);
     string sBias;
-    auto file = new TFile();
     auto c = new TCanvas("c1", "c1", 1);
 
     string cmd = (string)"mkdir Ch-" + sCh;
     gSystem -> Exec(cmd.c_str());
 
     ofstream fout;
-    fout . open("mean.txt");
+    string OutFile = (string)"Ch-" + sCh + "/" + "mean.txt";
+    fout.open(OutFile.c_str());
     for(int bias:{0, 30, 60, 90, 120, 150, 180, 210, 240})
     {
         sBias = to_string(bias);
         string FileName = (string)"Bias-" + sBias + "Ch-" + sCh + ".root";
-        file -> Open(FileName.c_str());
+	auto file = new TFile(FileName.c_str());
+	cout << "File Name: " << FileName << endl;
+	if(!file->IsOpen()){cout << "Error, file not open" << endl;continue;}
 
         string HistName = (string)"h" + sCh;
-        auto h_temp = (TH1F*) file -> Get(HistName.c_str);
+        auto h_temp = (TH1F*) file -> Get(HistName.c_str());
+	cout << "HistName: " << HistName << endl;
         c -> cd();
+	if(!h_temp) continue;
         h_temp -> Draw();
         string Path = (string)"Ch-" + sCh + "/";
 
@@ -37,7 +41,7 @@ void ReadGain(int ch)
         fout << bias << '\t' << h_temp -> GetMean() << endl;
 
         file -> Close();
+    	delete file;
     }
-    delete file;
     delete c;
 }
