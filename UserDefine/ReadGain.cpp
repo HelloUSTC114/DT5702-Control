@@ -26,7 +26,7 @@ void ReadGain(int ch)
         file -> Open(FileName.c_str());
 
         string HistName = (string)"h" + sCh;
-        auto h_temp = (TH1F*) file -> Get(HistName.c_str);
+        auto h_temp = (TH1F*) file -> Get(HistName.c_str());
         c -> cd();
         h_temp -> Draw();
         string Path = (string)"Ch-" + sCh + "/";
