@@ -29,6 +29,7 @@ void ReadGain(int ch)
 
         string HistName = (string)"h" + sCh;
         auto h_temp = (TH1F*) file -> Get(HistName.c_str());
+        h_temp -> SetBinContent(1, 0);
 	cout << "HistName: " << HistName << endl;
         c -> cd();
 	if(!h_temp) continue;
