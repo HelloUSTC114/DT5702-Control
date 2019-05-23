@@ -49,10 +49,11 @@ void CheckGain2(int channel)
 
             for (int i = 0; i < 32; i++)    // Set bias and set amplifier
             {
-                fChanBias[i]->SetNumber(bias);
+                fChanBias[i]->SetNumber(0);
                 fChanGain[i]->SetNumber(50);
                 fChanEnaTrig[i] -> SetOn(kFALSE);
             }
+            fChanBias[ch1] -> SetNumber(bias);
 
             SendConfig();
             gSystem -> ProcessEvents();
