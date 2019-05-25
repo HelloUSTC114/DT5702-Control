@@ -4,6 +4,7 @@
 using namespace std;
 
 int fInit = 0;
+int fDAQNum = 50000;
 
 void CheckGain2(int group);
 void CheckGain2Loop(int startIndex)
@@ -35,6 +36,13 @@ void CheckGain2(int group)
         gSystem -> ProcessEvents();
         cout << "Measuring group: " << group << " Please check your connection, and press enter to continue" << endl;
         cin >> sTemp;
+
+        cout << "Input Threshold DAC: " << endl;
+        cin >> sTemp;
+        int dac1 = stoi(sTemp);
+        SetThresholdDAC1(dac1);
+        SetThresholdDAC2(dac1);
+        
         HVON();
         fChanEnaTrig[32] -> SetOn(kFALSE);
         // fChanEnaTrig[32] -> SetOn(kFALSE);
@@ -43,7 +51,8 @@ void CheckGain2(int group)
         gSystem -> ProcessEvents();
         gSystem->Sleep(1000);
 
-        for(int bias:{0, 30, 60, 90, 120, 150, 180, 210, 240})      // Set different bias
+        for(int bias:{0})      // Set different bias
+        // for(int bias:{0, 30, 60, 90, 120, 150, 180, 210, 240})      // Set different bias
         {
             int ch1 = group * 2;
             int ch2 = ch1 + 1;
@@ -73,7 +82,7 @@ void CheckGain2(int group)
             gSystem -> ProcessEvents();
             gSystem->Sleep(1000);
 
-            StartDAQ(10000);
+            StartDAQ(fDAQNum);
 
             string filename1 = (string) "Bias-" + to_string(bias) + "Ch-" + to_string(ch1);
             string filename2 = (string) "Bias-" + to_string(bias) + "Ch-" + to_string(ch2);
