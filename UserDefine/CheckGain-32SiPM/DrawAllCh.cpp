@@ -17,7 +17,7 @@ void DrawAllCh()
     }
     for(int i = 2; i < 32; i++)
     {
-        c -> cd(i);
+        c -> cd(i - 1);
         hArray[i] -> Draw();
     }
     c -> SaveAs("Test.pdf");

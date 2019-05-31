@@ -9,6 +9,8 @@
 #include "TMath.h"
 #include "TSpectrum.h"
 
+#include <map>
+
 class MultiGauss
 {
 public:
@@ -56,6 +58,8 @@ private:
     bool Clear();
     bool SetHist(TH1* h);
     bool FitHist(UInt_t nGauss);
+
+    double EstimateGain();
 };
 
 #endif

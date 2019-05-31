@@ -180,3 +180,79 @@ bool FitSpectrum::Fit(TH1 *h, UInt_t nGauss)
 {
     return SetHist(h) && FitHist(nGauss);
 }
+
+double FitSpectrum::EstimateGain()
+{
+    if(!fHistFlag)
+    {
+        cerr << "Error, Histogram not set" << endl;
+        return -1;
+    }
+
+    fSpectrum -> Search(fHOrigin, 5, "", 0.001);
+
+    int peaks = fSpectrum -> GetNPeaks();
+    auto peaksX = fSpectrum -> GetPositionX();
+    auto peaksY = fSpectrum -> GetPositionY();
+
+
+    fFirstPeakStartFitPoint = fFirstPeakMeanStartLimit = peaksX[0] - 20;
+    fFirstPeakMeanEndLimit = peaksX[0] + 20;
+
+    // Estimate gain
+    // Put all points into a map, sort all peaks Y
+    map<double, double> Points;
+    for(int i = 0; i < peaks; i++)
+    {
+        Points.insert(pair<double, double>(peaksY[i], peaksX[i]));
+    }
+    map<double, double>::reverse_iterator iter;
+
+    iter = Points.rbegin();
+    double largestPeakY = iter -> first;
+    double largestPeakX = iter -> second;
+
+    iter++;
+    double subLargestPeakY = iter -> first;
+    double subLargestPeakX = iter -> second;
+
+    double subsubLargestPeakY = 0;
+    double subsubLargestPeakX = 0;
+    if(subLargestPeakX < largestPeakX)
+    {
+        iter++;
+        subsubLargestPeakY = iter -> first;
+        subsubLargestPeakX = iter -> second;
+    }
+
+    if(subsubLargestPeakX == 0)
+    {
+        double gain = 0;
+        gain = subLargestPeakX - largestPeakX;
+        fGainGuess = gain;
+        return fGainGuess;
+    }
+    else
+    {
+        double gain1 = abs(subLargestPeakX - largestPeakX);
+        double gain2 = abs(subsubLargestPeakX - subLargestPeakX);
+        if(abs(gain1 - gain2) < 15)
+        {
+            fGainGuess = (gain1 + gain2) / 2.0;
+            return (gain1 + gain2) / 2.0;
+        }
+        else if(abs(gain1 / gain2 - 0.5) < 0.1)
+        {
+            fGainGuess = (gain2 / 2.0 + gain1) / 2.0;
+            return (gain2 / 2.0 + gain1) / 2.0;
+        }
+        else if(abs(gain2 / gain1 - 0.5) < 0.1)
+        {
+            fGainGuess = (gain1 / 2.0 + gain2) / 2.0;
+            return (gain1 / 2.0 + gain2) / 2.0;
+        }
+    }
+    
+
+
+}
