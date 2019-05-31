@@ -2,6 +2,8 @@ FEBDTP_Dict_rdict.pcm
 FEBDTP_Dict.cxx
 *.o
 *.so
+*.pcm
+Link.cxx
 *.root
 test
 .vscode/*

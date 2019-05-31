@@ -70,6 +70,7 @@ FitSpectrum::~FitSpectrum()
     fHAdd = NULL;
     fSpectrum->Delete();
     fSpectrum = NULL;
+    cout << "Deleted" << endl;
 }
 
 bool FitSpectrum::SetHist(TH1 *h)
@@ -133,7 +134,7 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
             sFitFunArray[peakIndex] -> SetParameter(2, 20);
 
             // Start position should be given and fixed in further fit
-            fHGauss -> Fit(sFitFunArray[peakIndex], "-", "", fFirstPeakStartFitPoint, fFirstPeakStartFitPoint + 2 * fFirstPeakSigma);
+            fHGauss -> Fit(sFitFunArray[peakIndex], "Q", "", fFirstPeakStartFitPoint, fFirstPeakStartFitPoint + 2 * fFirstPeakSigma);
         }
         else
         {
@@ -156,7 +157,7 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
             sFitFunArray[peakIndex] -> SetParameter(3 * peakIndex + 2, 10);
             sFitFunArray[peakIndex] -> SetParLimits(3 * peakIndex + 2, 5, 40);
 
-            fHGauss -> Fit(sFitFunArray[peakIndex], "-", "", start, end);
+            fHGauss -> Fit(sFitFunArray[peakIndex], "Q", "", start, end);
         }
     }
 
@@ -178,7 +179,10 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
 
 bool FitSpectrum::Fit(TH1 *h, UInt_t nGauss)
 {
-    return SetHist(h) && FitHist(nGauss);
+    auto a = SetHist(h);
+    EstimateGain();
+    auto b = FitHist(nGauss);
+    return a&&b;// && FitHist(nGauss);
 }
 
 double FitSpectrum::EstimateGain()
@@ -196,33 +200,39 @@ double FitSpectrum::EstimateGain()
     auto peaksY = fSpectrum -> GetPositionY();
 
 
-    fFirstPeakStartFitPoint = fFirstPeakMeanStartLimit = peaksX[0] - 20;
-    fFirstPeakMeanEndLimit = peaksX[0] + 20;
 
     // Estimate gain
     // Put all points into a map, sort all peaks Y
     map<double, double> Points;
+    map<double, double> mapPeakX;
+
     for(int i = 0; i < peaks; i++)
     {
-        Points.insert(pair<double, double>(peaksY[i], peaksX[i]));
+        mapPeakX.insert(pair<double, double>(peaksX[i], peaksY[i]));
     }
-    map<double, double>::reverse_iterator iter;
 
-    iter = Points.rbegin();
-    double largestPeakY = iter -> first;
-    double largestPeakX = iter -> second;
+    // Getkl Peak position info
+    map<double, double>::iterator iter;
+    iter = mapPeakX.begin();
+    auto peak0 = iter -> first;
 
-    iter++;
-    double subLargestPeakY = iter -> first;
-    double subLargestPeakX = iter -> second;
+    fFirstPeakStartFitPoint = fFirstPeakMeanStartLimit = peak0 - 20;
+    fFirstPeakMeanEndLimit = peak0 + 20;
+
+    // Get gain
+
+    double largestPeakX = peaksX[0];
+    double largestPeakY = peaksY[0];
+
+    double subLargestPeakX = peaksX[1];
+    double subLargestPeakY = peaksY[1];
 
     double subsubLargestPeakY = 0;
     double subsubLargestPeakX = 0;
     if(subLargestPeakX < largestPeakX)
     {
-        iter++;
-        subsubLargestPeakY = iter -> first;
-        subsubLargestPeakX = iter -> second;
+        subsubLargestPeakY = peaksY[2];
+        subsubLargestPeakX = peaksY[2];
     }
 
     if(subsubLargestPeakX == 0)
@@ -230,7 +240,6 @@ double FitSpectrum::EstimateGain()
         double gain = 0;
         gain = subLargestPeakX - largestPeakX;
         fGainGuess = gain;
-        return fGainGuess;
     }
     else
     {
@@ -239,20 +248,19 @@ double FitSpectrum::EstimateGain()
         if(abs(gain1 - gain2) < 15)
         {
             fGainGuess = (gain1 + gain2) / 2.0;
-            return (gain1 + gain2) / 2.0;
         }
         else if(abs(gain1 / gain2 - 0.5) < 0.1)
         {
             fGainGuess = (gain2 / 2.0 + gain1) / 2.0;
-            return (gain2 / 2.0 + gain1) / 2.0;
         }
         else if(abs(gain2 / gain1 - 0.5) < 0.1)
         {
             fGainGuess = (gain1 / 2.0 + gain2) / 2.0;
-            return (gain1 / 2.0 + gain2) / 2.0;
         }
     }
-    
+    cout << "Estimate gain: " << fGainGuess << endl;
+    cout << "Start fit Point: " << fFirstPeakStartFitPoint << endl;
+    return fGainGuess;
 
 
 }
