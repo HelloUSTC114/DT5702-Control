@@ -6,9 +6,9 @@ HEADER=FitSiPMSPE.h
 
 
 FULLLIB: ${SRC} ${HEADER} Link.cxx
-	`root-config --cxx --cflags` -fPIC -shared -o ${FULLLIB} ${SRC} `root-config --libs`
-Link.cxx: ${HEADER}
-	rootcling -f Link.cxx ${HEADER}
+	`root-config --cxx --cflags` -fPIC -shared -o ${FULLLIB} ${SRC} `root-config --libs` -lSpectrum
+Link.cxx: ${HEADER} Fit_LinkDef.h
+	rootcling -f Link.cxx -c -p ${HEADER} Fit_LinkDef.h
 
 clean:
-	-@rm -rf *.so *.pcm
+	-@rm -rf *.so *.pcm Link.cxx

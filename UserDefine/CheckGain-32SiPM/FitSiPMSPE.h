@@ -11,8 +11,6 @@
 
 #include <map>
 
-#pragma link C++ class FitSpectrum;
-#pragma link C++ class MultiGauss;
 class MultiGauss
 {
 public:
@@ -63,6 +61,7 @@ private:
 
     double EstimateGain();
 };
+
 
 
 #endif
