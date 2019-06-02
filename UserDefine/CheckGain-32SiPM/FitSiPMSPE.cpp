@@ -214,7 +214,10 @@ double FitSpectrum::EstimateGain()
     // Getkl Peak position info
     map<double, double>::iterator iter;
     iter = mapPeakX.begin();
-    iter ++;    // Get the second peak
+
+    if(iter -> first != peaksX[0])
+        iter ++;    // Get the second peak
+    
     auto peak0 = iter -> first;
 
     fFirstPeakStartFitPoint = fFirstPeakMeanStartLimit = peak0 - 20;
