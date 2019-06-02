@@ -39,15 +39,19 @@ FitSpectrum::FitSpectrum(UInt_t bins)
     fBinsX = bins;
     fHGauss = new TH1D("PureGauss", "Pure Gauss Spectrum", fBinsX, 0, 4100);
     fHAdd = new TH1D("Sum", "Add Fit Fun & Background", fBinsX, 0, 4100);
+    
+    fHGauss -> SetDirectory(0);
+    fHAdd -> SetDirectory(0);
     fSpectrum = new TSpectrum();
 
 }
 
 bool FitSpectrum::Clear()
 {
+    fNPeak = 0;
     if(fHistFlag)
     {
-        fHBackGround ->Delete();
+        // fHBackGround -> Delete();
         fHBackGround = NULL;
         fHistFlag = false;
     }
@@ -64,13 +68,12 @@ bool FitSpectrum::Clear()
 FitSpectrum::~FitSpectrum()
 {
     Clear();
+    fSpectrum->Delete();
+    fSpectrum = NULL;
     fHGauss -> Delete();
     fHGauss = NULL;
     fHAdd->Delete();
     fHAdd = NULL;
-    fSpectrum->Delete();
-    fSpectrum = NULL;
-    cout << "Deleted" << endl;
 }
 
 bool FitSpectrum::SetHist(TH1 *h)
@@ -85,9 +88,6 @@ bool FitSpectrum::SetHist(TH1 *h)
     fHOrigin = h;
     fHBackGround = fSpectrum -> Background(fHOrigin);
     fHGauss ->Add(fHOrigin, fHBackGround, 1, -1);
-    cout << "fHOrigin: " << fHOrigin -> GetNbinsX() << endl;
-    cout << "fHBackGround: " << fHBackGround -> GetNbinsX() << endl;
-    cout << "fHGauss: " << fHGauss -> GetNbinsX() << endl;
 
     fHistFlag = 1;
     return true;
@@ -103,6 +103,7 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
     {
         return true;
     }
+    fNPeak = nGauss;
 
     fFitFlag = 1;
 
@@ -166,7 +167,6 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
     fHAdd -> Reset();
     fHAdd -> Add(fHBackGround);
     fHAdd -> Add(fFunction);
-    cout << "fHAdd: " << fHAdd -> GetNbinsX() << endl;
 
     for(int i = 0; i < sNGauss - 1; i++)
     {
@@ -214,6 +214,7 @@ double FitSpectrum::EstimateGain()
     // Getkl Peak position info
     map<double, double>::iterator iter;
     iter = mapPeakX.begin();
+    iter ++;    // Get the second peak
     auto peak0 = iter -> first;
 
     fFirstPeakStartFitPoint = fFirstPeakMeanStartLimit = peak0 - 20;
@@ -258,9 +259,47 @@ double FitSpectrum::EstimateGain()
             fGainGuess = (gain1 / 2.0 + gain2) / 2.0;
         }
     }
-    cout << "Estimate gain: " << fGainGuess << endl;
-    cout << "Start fit Point: " << fFirstPeakStartFitPoint << endl;
     return fGainGuess;
 
 
 }
+
+FitResult FitSpectrum::GetGain() const
+{
+    if(!fFitFlag)
+    {
+        return {-1,-1};
+    }
+
+    vector<double> vecPeak;
+    for(int i = 0; i < fNPeak; i++)
+    {
+        double peak = fFunction -> GetParameter(3 * i + 1);
+        vecPeak . push_back(peak);
+    }
+
+    vector<double> vecVari;
+    for(int i = 0; i < fNPeak - 1; i++)
+    {
+        vecVari . push_back(vecPeak[i + 1] - vecPeak[i]);
+    }
+    double sum = 0;
+    for(int i = 0; i < fNPeak - 1; i++)
+    {
+        sum += vecVari[i];
+
+#ifdef VERBOSE
+        cout << i << "\t" << "Gain: " << vecVari[i] << endl;
+#endif
+    }
+    double gain = sum / (fNPeak - 1);
+    double peak0 = vecPeak[0] - gain;
+    
+#ifdef VERBOSE
+    cout << "Gain: " << gain << endl;
+#endif
+
+    FitResult result{gain, peak0};
+    return result;
+}
+

@@ -11,6 +11,12 @@
 
 #include <map>
 
+struct FitResult
+{
+    double gain;
+    double peak0;
+};
+
 class MultiGauss
 {
 public:
@@ -33,12 +39,12 @@ public:
     TH1* GetGauss() const{return fHGauss;}
     TH1* GetSum() const {return fHAdd;}
     TF1* GetFunction() const{return fFunction;}
-    double GetGain() const;
-
+    FitResult GetGain() const;
 
 private:
     bool fHistFlag = 0;
     bool fFitFlag = 0;
+    int fNPeak = 0;
     TH1 *fHOrigin = NULL;
     TF1 *fFunction = NULL;
     TSpectrum * fSpectrum = NULL;
