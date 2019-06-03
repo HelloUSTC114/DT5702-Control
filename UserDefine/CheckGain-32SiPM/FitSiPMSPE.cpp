@@ -213,10 +213,8 @@ double FitSpectrum::EstimateGain()
 
     // Getkl Peak position info
     map<double, double>::iterator iter;
-    iter = mapPeakX.begin();
 
-    if(iter -> first != peaksX[0])
-        iter ++;    // Get the second peak
+    for(iter = mapPeakX.begin(); iter->first < 150; iter++) ;   // if peak0 is at position smaller than 150, continue
     
     auto peak0 = iter -> first;
 
@@ -224,7 +222,7 @@ double FitSpectrum::EstimateGain()
     fFirstPeakMeanEndLimit = peak0 + 20;
 
     // Get gain
-
+    /*
     double largestPeakX = peaksX[0];
     double largestPeakY = peaksY[0];
 
@@ -262,6 +260,18 @@ double FitSpectrum::EstimateGain()
             fGainGuess = (gain1 / 2.0 + gain2) / 2.0;
         }
     }
+    */
+
+
+    iter ++;
+    double peak1 = iter -> first;
+    // iter ++;
+    // double peak2 = iter -> first;
+    // iter ++;
+    // double peak3 = iter -> first;
+    // fGainGuess = (peak2 + peak3) / 4- (peak0 + peak1) / 4;
+    fGainGuess = (peak1 - peak0);
+    cout << "Guess gain in estimation: " << fGainGuess << endl;
     return fGainGuess;
 
 

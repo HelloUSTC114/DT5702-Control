@@ -41,6 +41,8 @@ public:
     TF1* GetFunction() const{return fFunction;}
     FitResult GetGain() const;
 
+    double GetGainGuess() const{return fGainGuess;}
+
 private:
     bool fHistFlag = 0;
     bool fFitFlag = 0;
