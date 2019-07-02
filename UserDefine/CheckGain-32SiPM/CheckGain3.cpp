@@ -39,7 +39,7 @@ void CheckGain2(int group)
         HVOF();
         gSystem -> ProcessEvents();
 
-        int dac1 = 260;
+        int dac1 = 250;
         SetThresholdDAC1(dac1);
         SetThresholdDAC2(dac1);
         
