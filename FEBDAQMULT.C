@@ -504,8 +504,8 @@ void SendConfig()
 
   //for(int feb=0; feb<t->nclients; feb++)
   // {
-  //  SetDstMacByIndex(feb);
-  t->dstmac[5] = 0xff; //Broadcast
+  SetDstMacByIndex(BoardToMon);
+  // t->dstmac[5] = 0xff; //Broadcast
   t->SendCMD(t->dstmac, FEB_WR_SCR, 0x0000, bufSCR);
   t->SendCMD(t->dstmac, FEB_WR_PMR, 0x0000, bufPMR);
   t->SendCMD(t->dstmac, FEB_WR_FIL, 0x0000, bufFIL);

@@ -1,5 +1,6 @@
 #include "FitSiPMSPE.h"
 using namespace std;
+// #define VERBOSE
 
 MultiGauss::MultiGauss(int nPeak)
 {
@@ -19,10 +20,10 @@ void MultiGauss::SetNPeak(int nPeak)
     }
 }
 
-double MultiGauss::operator()(double* x, double *par) const
+double MultiGauss::operator()(double *x, double *par) const
 {
     double y = 0;
-    for(int i = 0; i < fNPeak; i++)
+    for (int i = 0; i < fNPeak; i++)
     {
         y += par[i * 3 + 0] * TMath::Gaus(x[0], par[i * 3 + 1], par[i * 3 + 2]);
     }
@@ -39,29 +40,29 @@ FitSpectrum::FitSpectrum(UInt_t bins)
     fBinsX = bins;
     fHGauss = new TH1D("PureGauss", "Pure Gauss Spectrum", fBinsX, 0, 4100);
     fHAdd = new TH1D("Sum", "Add Fit Fun & Background", fBinsX, 0, 4100);
-    
-    fHGauss -> SetDirectory(0);
-    fHAdd -> SetDirectory(0);
-    fSpectrum = new TSpectrum();
 
+    fHGauss->SetDirectory(0);
+    fHAdd->SetDirectory(0);
+    fSpectrum = new TSpectrum();
 }
 
 bool FitSpectrum::Clear()
 {
     fNPeak = 0;
-    if(fHistFlag)
+    if (fHistFlag)
     {
         // fHBackGround -> Delete();
         fHBackGround = NULL;
         fHistFlag = false;
     }
-    if(fFitFlag)
+    if (fFitFlag)
     {
         delete fFunction;
         fFunction = NULL;
 
         fFitFlag = false;
     }
+    fFitSuccess = false;
     return true;
 }
 
@@ -70,7 +71,7 @@ FitSpectrum::~FitSpectrum()
     Clear();
     fSpectrum->Delete();
     fSpectrum = NULL;
-    fHGauss -> Delete();
+    fHGauss->Delete();
     fHGauss = NULL;
     fHAdd->Delete();
     fHAdd = NULL;
@@ -78,7 +79,7 @@ FitSpectrum::~FitSpectrum()
 
 bool FitSpectrum::SetHist(TH1 *h)
 {
-    if(!h)
+    if (!h)
     {
         cerr << "Error! Input invalid histogram." << endl;
         return false;
@@ -86,8 +87,8 @@ bool FitSpectrum::SetHist(TH1 *h)
     Clear();
 
     fHOrigin = h;
-    fHBackGround = fSpectrum -> Background(fHOrigin);
-    fHGauss ->Add(fHOrigin, fHBackGround, 1, -1);
+    fHBackGround = fSpectrum->Background(fHOrigin);
+    fHGauss->Add(fHOrigin, fHBackGround, 1, -1);
 
     fHistFlag = 1;
     return true;
@@ -95,11 +96,11 @@ bool FitSpectrum::SetHist(TH1 *h)
 
 bool FitSpectrum::FitHist(UInt_t nGauss)
 {
-    if(!fHistFlag)
+    if (!fHistFlag)
     {
         return false;
     }
-    if(fFitFlag)
+    if (fFitFlag)
     {
         return true;
     }
@@ -109,38 +110,38 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
 
     UInt_t sNGauss = nGauss;
     MultiGauss sMultiGauss(0);
-    TF1* sFitFunArray[nGauss];
+    TF1 *sFitFunArray[nGauss];
 
     // Start to fit
-    for(int peakIndex = 0; peakIndex < nGauss; peakIndex++)
+    for (int peakIndex = 0; peakIndex < nGauss; peakIndex++)
     {
         // First to create a function with i peaks;
         int peakNumTemp = peakIndex + 1;
         sMultiGauss.SetNPeak(peakNumTemp);
 
         sFitFunArray[peakIndex] = new TF1(Form("FitFun%d", peakIndex), sMultiGauss, 0, 4100, 3 * peakNumTemp);
-        for(int i =0 ; i < 3 * peakNumTemp; i++)
+        for (int i = 0; i < 3 * peakNumTemp; i++)
         {
             // Set limits of fit function;
-            sFitFunArray[peakIndex] -> SetParLimits(i, 0, 20000);   // Set all parameters larger than 0
+            sFitFunArray[peakIndex]->SetParLimits(i, 0, 20000); // Set all parameters larger than 0
         }
 
         // Judge if this time is the first time to fit. If yes, initialize function
-        if(peakIndex == 0)
+        if (peakIndex == 0)
         {
             // Set first Peak limits
-            sFitFunArray[peakIndex] -> SetParLimits(1, fFirstPeakMeanStartLimit, fFirstPeakMeanEndLimit);
-            sFitFunArray[peakIndex] -> SetParameter(0, 60);
-            sFitFunArray[peakIndex] -> SetParameter(1, 300);
-            sFitFunArray[peakIndex] -> SetParameter(2, 20);
+            sFitFunArray[peakIndex]->SetParLimits(1, fFirstPeakMeanStartLimit, fFirstPeakMeanEndLimit);
+            sFitFunArray[peakIndex]->SetParameter(0, 60);
+            sFitFunArray[peakIndex]->SetParameter(1, 300);
+            sFitFunArray[peakIndex]->SetParameter(2, 20);
 
             // Start position should be given and fixed in further fit
-            fHGauss -> Fit(sFitFunArray[peakIndex], "Q", "", fFirstPeakStartFitPoint, fFirstPeakStartFitPoint + 2 * fFirstPeakSigma);
+            fHGauss->Fit(sFitFunArray[peakIndex], "Q", "", fFirstPeakStartFitPoint, fFirstPeakStartFitPoint + 2 * fFirstPeakSigma);
         }
         else
         {
             // First, get the mean position of last peak
-            double sLastPeakMean = sFitFunArray[peakIndex - 1] -> GetParameter(3 * (peakIndex - 1) + 1);
+            double sLastPeakMean = sFitFunArray[peakIndex - 1]->GetParameter(3 * (peakIndex - 1) + 1);
             // Define Start position, in which case, I set it at first peak minus 5 sigma
             double start = sFitFunArray[0]->GetParameter(1) - 5 * sFitFunArray[0]->GetParameter(2);
             // Define end position, I set it at the last fit peak plus 160
@@ -153,60 +154,82 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
             }
 
             // Set Initial value of parameters
-            sFitFunArray[peakIndex] -> SetParameter(3 * peakIndex + 1, sLastPeakMean + fGainGuess);
-            sFitFunArray[peakIndex] -> SetParLimits(3 * peakIndex + 1, sLastPeakMean, sLastPeakMean + 2 * fGainGuess);
-            sFitFunArray[peakIndex] -> SetParameter(3 * peakIndex + 2, 10);
-            sFitFunArray[peakIndex] -> SetParLimits(3 * peakIndex + 2, 5, 40);
+            sFitFunArray[peakIndex]->SetParameter(3 * peakIndex + 1, sLastPeakMean + fGainGuess);
+            sFitFunArray[peakIndex]->SetParLimits(3 * peakIndex + 1, sLastPeakMean, sLastPeakMean + 2 * fGainGuess);
+            sFitFunArray[peakIndex]->SetParameter(3 * peakIndex + 2, 10);
+            sFitFunArray[peakIndex]->SetParLimits(3 * peakIndex + 2, 5, 40);
 
-            fHGauss -> Fit(sFitFunArray[peakIndex], "Q", "", start, end);
+            fHGauss->Fit(sFitFunArray[peakIndex], "Q", "", start, end);
+
+            if (peakIndex > 0)
+                ;
+            auto tFitFun = sFitFunArray[peakIndex];
+            int peakx1 = tFitFun->GetParameter(3 * peakIndex + 1);
+            int peakx2 = tFitFun->GetParameter(3 * peakIndex - 2);
+            int gaintest = peakx1 - peakx2;
+            if (TMath::Abs(TMath::Abs(peakx1 - peakx2) - fGainGuess) > 0.15 * fGainGuess)
+            {
+                fFitSuccess = false;
+                return false;
+            }
         }
     }
 
     // Add fit function to background to get the final fit result.
     fFunction = sFitFunArray[sNGauss - 1];
-    fHAdd -> Reset();
-    fHAdd -> Add(fHBackGround);
-    fHAdd -> Add(fFunction);
+    fHAdd->Reset();
+    fHAdd->Add(fHBackGround);
+    fHAdd->Add(fFunction);
 
-    for(int i = 0; i < sNGauss - 1; i++)
+    for (int i = 0; i < sNGauss - 1; i++)
     {
-        sFitFunArray[i] -> Delete();
+        sFitFunArray[i]->Delete();
     }
 
-    return true;
+    fFitSuccess = true;
 
+    return true;
 }
 
 bool FitSpectrum::Fit(TH1 *h, UInt_t nGauss)
 {
     auto a = SetHist(h);
+#ifdef VERBOSE
+    cout << "Histogram has set." << endl;
+#endif
     EstimateGain();
+#ifdef VERBOSE
+    cout << "Estimation done." << endl;
+#endif
+
     auto b = FitHist(nGauss);
-    return a&&b;// && FitHist(nGauss);
+#ifdef VERBOSE
+    cout << "Fit done." << endl;
+#endif
+
+    return a && b; // && FitHist(nGauss);
 }
 
 double FitSpectrum::EstimateGain()
 {
-    if(!fHistFlag)
+    if (!fHistFlag)
     {
         cerr << "Error, Histogram not set" << endl;
         return -1;
     }
 
-    fSpectrum -> Search(fHOrigin, 5, "", 0.001);
+    fSpectrum->Search(fHOrigin, 5, "", 0.001);
 
-    int peaks = fSpectrum -> GetNPeaks();
-    auto peaksX = fSpectrum -> GetPositionX();
-    auto peaksY = fSpectrum -> GetPositionY();
-
-
+    int peaks = fSpectrum->GetNPeaks();
+    auto peaksX = fSpectrum->GetPositionX();
+    auto peaksY = fSpectrum->GetPositionY();
 
     // Estimate gain
     // Put all points into a map, sort all peaks Y
     map<double, double> Points;
     map<double, double> mapPeakX;
 
-    for(int i = 0; i < peaks; i++)
+    for (int i = 0; i < peaks; i++)
     {
         mapPeakX.insert(pair<double, double>(peaksX[i], peaksY[i]));
     }
@@ -214,9 +237,29 @@ double FitSpectrum::EstimateGain()
     // Getkl Peak position info
     map<double, double>::iterator iter;
 
-    for(iter = mapPeakX.begin(); iter->first < 150; iter++) ;   // if peak0 is at position smaller than 150, continue
+    for (iter = mapPeakX.begin(); iter->first < 300 && iter != mapPeakX.end(); iter++)
+        ; // if peak0 is at position smaller than 150, continue
+
+    if(iter == mapPeakX.end())
+    {
+        iter = mapPeakX.begin();
+        for (iter = mapPeakX.begin(); iter->first < 100 && iter != mapPeakX.end(); iter++);
+
+    }
     
-    auto peak0 = iter -> first;
+    if(iter == mapPeakX.end())
+    {
+        cout << "Estimation failed." << endl;
+        fGainGuess = -1;
+        return fGainGuess;
+    }
+
+    auto peak0 = iter->first;
+
+#ifdef VERBOSE
+    cout << "Fit Process: peak0: " << peak0 << endl;
+
+#endif
 
     fFirstPeakStartFitPoint = fFirstPeakMeanStartLimit = peak0 - 20;
     fFirstPeakMeanEndLimit = peak0 + 20;
@@ -262,52 +305,57 @@ double FitSpectrum::EstimateGain()
     }
     */
 
-
-    iter ++;
-    double peak1 = iter -> first;
+    iter++;
+    double peak1 = iter->first;
     // iter ++;
     // double peak2 = iter -> first;
     // iter ++;
     // double peak3 = iter -> first;
     // fGainGuess = (peak2 + peak3) / 4- (peak0 + peak1) / 4;
     fGainGuess = (peak1 - peak0);
+#ifdef VERBOSE
     cout << "Guess gain in estimation: " << fGainGuess << endl;
+#endif
     return fGainGuess;
-
-
 }
 
 FitResult FitSpectrum::GetGain() const
 {
-    if(!fFitFlag)
+    if (!fFitFlag)
     {
-        return {-1,-1};
+        return {-1, -1};
+    }
+
+    if (!fFitSuccess)
+    {
+        return {-1, -1};
     }
 
     vector<double> vecPeak;
-    for(int i = 0; i < fNPeak; i++)
+    for (int i = 0; i < fNPeak; i++)
     {
-        double peak = fFunction -> GetParameter(3 * i + 1);
-        vecPeak . push_back(peak);
+        double peak = fFunction->GetParameter(3 * i + 1);
+        vecPeak.push_back(peak);
     }
 
     vector<double> vecVari;
-    for(int i = 0; i < fNPeak - 1; i++)
+    for (int i = 0; i < fNPeak - 1; i++)
     {
-        vecVari . push_back(vecPeak[i + 1] - vecPeak[i]);
+        vecVari.push_back(vecPeak[i + 1] - vecPeak[i]);
     }
     double sum = 0;
-    for(int i = 0; i < fNPeak - 1; i++)
+    for (int i = 0; i < fNPeak - 1; i++)
     {
         sum += vecVari[i];
 
 #ifdef VERBOSE
-        cout << i << "\t" << "Gain: " << vecVari[i] << endl;
+        cout << i << "\t"
+             << "Gain: " << vecVari[i] << endl;
 #endif
     }
     double gain = sum / (fNPeak - 1);
     double peak0 = vecPeak[0] - gain;
-    
+
 #ifdef VERBOSE
     cout << "Gain: " << gain << endl;
 #endif
@@ -316,3 +364,24 @@ FitResult FitSpectrum::GetGain() const
     return result;
 }
 
+void FitSpectrum::Save(string filename)
+{
+    if (filename == "")
+    {
+        filename = "FitSiPMAutoSave.root";
+    }
+
+    if (fHistFlag)
+    {
+        cout << filename << endl;
+        TFile f(filename.c_str(), "recreate");
+        f.cd();
+        fHOrigin->Write();
+        if (fFitSuccess)
+        {
+            fHBackGround->Write();
+            fFunction->Write();
+        }
+        f.Close();
+    }
+}

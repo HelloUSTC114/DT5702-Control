@@ -8,6 +8,8 @@
 #include "TSystem.h"
 #include "TMath.h"
 #include "TSpectrum.h"
+#include <string>
+using namespace std;
 
 #include <map>
 
@@ -41,11 +43,14 @@ public:
     TF1* GetFunction() const{return fFunction;}
     FitResult GetGain() const;
 
+    void Save(string filename = "");
+
     double GetGainGuess() const{return fGainGuess;}
 
 private:
     bool fHistFlag = 0;
     bool fFitFlag = 0;
+    bool fFitSuccess = 0;
     int fNPeak = 0;
     TH1 *fHOrigin = NULL;
     TF1 *fFunction = NULL;
