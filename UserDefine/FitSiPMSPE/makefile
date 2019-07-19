@@ -16,9 +16,13 @@ clean:
 test:	ReadSpectra.cpp ${FULLLIB}
 	`root-config --cxx --cflags` -fPIC -o $@ $< -L. -l${LIB} `root-config --libs`
 
+test2:	ReadSpectra2.cpp ${FULLLIB}
+	`root-config --cxx --cflags` -fPIC -o $@ $< -L. -l${LIB} `root-config --libs`
+
+
 install:
 	-@mkdir excute
-	-@cp $(FULLLIB) test rootlogon.C *.pcm excute
+	-@cp $(FULLLIB) test2 rootlogon.C *.pcm excute
 clean:
 	-@rm $(FULLLIB) test Link.cxx *.pcm
 distclean:

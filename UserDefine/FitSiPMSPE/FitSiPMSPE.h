@@ -8,6 +8,7 @@
 #include "TSystem.h"
 #include "TMath.h"
 #include "TSpectrum.h"
+#include "TCanvas.h"
 #include <string>
 using namespace std;
 
@@ -74,6 +75,11 @@ private:
 
     double EstimateGain();
 };
+
+FitResult ReadSpectra(string sFile = "Bias-0Ch-12.root", string sHist = "h12", string fileNamePre = "", bool saveFlag = 0);
+
+FitResult ReadSpectra(string sFile, string sHist, int PeakNum); // PeakNum means how many peaks should be fit
+
 
 
 

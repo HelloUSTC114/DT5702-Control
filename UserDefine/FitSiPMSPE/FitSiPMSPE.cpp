@@ -240,14 +240,14 @@ double FitSpectrum::EstimateGain()
     for (iter = mapPeakX.begin(); iter->first < 300 && iter != mapPeakX.end(); iter++)
         ; // if peak0 is at position smaller than 150, continue
 
-    if(iter == mapPeakX.end())
+    if (iter == mapPeakX.end())
     {
         iter = mapPeakX.begin();
-        for (iter = mapPeakX.begin(); iter->first < 100 && iter != mapPeakX.end(); iter++);
-
+        for (iter = mapPeakX.begin(); iter->first < 100 && iter != mapPeakX.end(); iter++)
+            ;
     }
-    
-    if(iter == mapPeakX.end())
+
+    if (iter == mapPeakX.end())
     {
         cout << "Estimation failed." << endl;
         fGainGuess = -1;
@@ -384,4 +384,94 @@ void FitSpectrum::Save(string filename)
         }
         f.Close();
     }
+}
+
+FitResult ReadSpectra(string sFile, string sHist, string fileNamePre, bool saveFlag)
+{
+    auto file = new TFile(sFile.c_str());
+    auto hist = (TH1F *)file->Get(sHist.c_str());
+    FitSpectrum sFitSpectrum(820);
+    if (file->IsOpen() == false)
+    {
+        cout << "Not open" << endl;
+        return {-1, -1};
+    }
+    bool fitResult = sFitSpectrum.Fit(hist, 3);
+    if (saveFlag)
+    {
+        sFitSpectrum.Save(sHist + ".root");
+    }
+
+    if (!fitResult)
+    {
+        return {-1, -1};
+    }
+
+    auto result = sFitSpectrum.GetGain();
+    // cout << "Gain guess: " << sFitSpectrum.GetGainGuess() << endl;
+
+    auto c = new TCanvas("c", "c", 1);
+    sFitSpectrum.GetGauss()->Draw();
+
+    auto c2 = new TCanvas("c2", "c2", 1);
+    sFitSpectrum.GetOrigin()->Draw();
+    sFitSpectrum.GetSum()->Draw("same");
+
+    if (fileNamePre == "")
+    {
+        c->SaveAs(Form("%s.pdf", sHist.c_str()));
+        c2->SaveAs(Form("Origin%s.pdf", sFile.c_str()));
+    }
+    else
+    {
+        c->SaveAs(Form("%s.pdf", fileNamePre.c_str()));
+        c2->SaveAs(Form("Origin%s.pdf", fileNamePre.c_str()));
+    }
+
+    delete c;
+    delete c2;
+
+    file->Close();
+    file->Delete();
+    return result;
+}
+
+FitResult ReadSpectra(string sFile, string sHist, int PeakNum) // PeakNum means how many peaks should be fit
+{
+    auto file = new TFile(sFile.c_str());
+    auto hist = (TH1F *)file->Get(sHist.c_str());
+    FitSpectrum sFitSpectrum(820);
+    if (file->IsOpen() == false)
+    {
+        cout << "Not open" << endl;
+        return {-1, -1};
+    }
+    bool fitResult = sFitSpectrum.Fit(hist, PeakNum);
+
+    if (!fitResult)
+    {
+        return {-1, -1};
+    }
+
+    auto result = sFitSpectrum.GetGain();
+    // cout << "Gain guess: " << sFitSpectrum.GetGainGuess() << endl;
+
+    auto c = new TCanvas("c", "c", 1);
+    sFitSpectrum.GetGauss()->Draw();
+
+    auto c2 = new TCanvas("c2", "c2", 1);
+    sFitSpectrum.GetOrigin()->Draw();
+    sFitSpectrum.GetSum()->Draw("same");
+
+    {
+        c->SaveAs(Form("%s.pdf", sHist.c_str()));
+        c2->SaveAs(Form("Origin%s.pdf", sFile.c_str()));
+    }
+
+    delete c;
+    delete c2;
+
+    file->Close();
+    file->Delete();
+    return result;
 }

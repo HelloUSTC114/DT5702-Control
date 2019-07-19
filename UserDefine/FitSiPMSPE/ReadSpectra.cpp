@@ -11,55 +11,6 @@
 #include "TGraph.h"
 using namespace std;
 
-FitResult ReadSpectra(string sFile = "Bias-0Ch-12.root", string sHist = "h12", string fileNamePre = "", bool saveFlag = 0)
-{
-    auto file = new TFile(sFile.c_str());
-    auto hist = (TH1F *)file->Get(sHist.c_str());
-    FitSpectrum sFitSpectrum(820);
-    if (file->IsOpen() == false)
-    {
-        cout << "Not open" << endl;
-        return {-1, -1};
-    }
-    bool fitResult = sFitSpectrum.Fit(hist, 3);
-    if (saveFlag)
-    {
-        sFitSpectrum.Save(sHist + ".root");
-    }
-
-    if (!fitResult)
-    {
-        return {-1, -1};
-    }
-
-    auto result = sFitSpectrum.GetGain();
-    // cout << "Gain guess: " << sFitSpectrum.GetGainGuess() << endl;
-
-    auto c = new TCanvas("c", "c", 1);
-    sFitSpectrum.GetGauss()->Draw();
-
-    auto c2 = new TCanvas("c2", "c2", 1);
-    sFitSpectrum.GetOrigin()->Draw();
-    sFitSpectrum.GetSum()->Draw("same");
-
-    if (fileNamePre == "")
-    {
-        c->SaveAs(Form("%s.pdf", sHist.c_str()));
-        c2->SaveAs(Form("Origin%s.pdf", sFile.c_str()));
-    }
-    else
-    {
-        c->SaveAs(Form("%s.pdf", fileNamePre.c_str()));
-        c2->SaveAs(Form("Origin%s.pdf", fileNamePre.c_str()));
-    }
-
-    delete c;
-    delete c2;
-
-    file->Close();
-    file->Delete();
-    return result;
-}
 
 int main(int argc, char **argv)
 {
