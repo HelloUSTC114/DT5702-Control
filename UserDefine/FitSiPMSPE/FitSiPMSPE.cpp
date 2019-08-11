@@ -140,6 +140,9 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
             cout << "First peak fit Range: " << fFirstPeakStartFitPoint << "~" << fFirstPeakMeanEndLimit << endl;
 #endif
             fHGauss->Fit(sFitFunArray[peakIndex], "Q", "", fFirstPeakStartFitPoint, fFirstPeakMeanEndLimit);
+#ifdef VERBOSE
+            cout << "First peak fit result: " << "Peak: " << sFitFunArray[peakIndex] -> GetParameter(1) << endl;
+#endif
         }
         else
         {
@@ -148,7 +151,10 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
             // Define Start position, in which case, I set it at first peak minus 5 sigma
             double start = sFitFunArray[0]->GetParameter(1) - 5 * sFitFunArray[0]->GetParameter(2);
             // Define end position, I set it at the last fit peak plus 160
-            double end = sLastPeakMean + 2 * fGainGuess;
+            // double end = sLastPeakMean + 2 * fGainGuess;
+
+            // It seems 2 * gain may be a little wider than best fit range
+            double end = sLastPeakMean + 1.5 * fGainGuess;
 
             // pass all parameter of the last fit function to the new function just created
             for (int par_index = 0; par_index < 3 * peakIndex; par_index++)
@@ -161,6 +167,16 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
             sFitFunArray[peakIndex]->SetParLimits(3 * peakIndex + 1, sLastPeakMean, sLastPeakMean + 2 * fGainGuess);
             sFitFunArray[peakIndex]->SetParameter(3 * peakIndex + 2, fFirstPeakSigma);
             sFitFunArray[peakIndex]->SetParLimits(3 * peakIndex + 2, 0.001 * fGainGuess, 0.2 * fGainGuess);
+
+            #ifdef VERBOSE
+            cout << "**********" << endl;
+            cout << "Fit Index: " << peakIndex << " is Fitting" << endl;
+            cout << "Start: " << start << endl;
+            cout << "End: " << end << endl;
+            cout << "Gain Guess: " << fGainGuess << endl;
+            cout << "Parameter limits: " << endl;
+            cout << "peak mean : " << "start: " << sLastPeakMean << " end: " << sLastPeakMean + 2 * fGainGuess << endl;
+            #endif
 
             fHGauss->Fit(sFitFunArray[peakIndex], "Q", "", start, end);
 
@@ -175,6 +191,7 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
 #ifdef VERBOSE
                 fHOrigin->SaveAs("ErrorOrigin.root");
                 fHGauss->SaveAs("ErrorGauss.root");
+                cout << "Fit index: " << peakIndex << endl;
 
                 cout << "Peak1: " << peakx1 << endl;
                 cout << "Peak2: " << peakx2 << endl;
