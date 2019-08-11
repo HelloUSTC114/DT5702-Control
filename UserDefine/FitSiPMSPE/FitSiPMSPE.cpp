@@ -138,10 +138,13 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
             // Start position should be given and fixed in further fit
 #ifdef VERBOSE
             cout << "First peak fit Range: " << fFirstPeakStartFitPoint << "~" << fFirstPeakMeanEndLimit << endl;
+            cout << "First peak position guess: " << fFirstPeakFitGuess << endl;
+            cout << "First peak sigma guess: " << 0.2 * fGainGuess << endl;
 #endif
             fHGauss->Fit(sFitFunArray[peakIndex], "Q", "", fFirstPeakStartFitPoint, fFirstPeakMeanEndLimit);
 #ifdef VERBOSE
-            cout << "First peak fit result: " << "Peak: " << sFitFunArray[peakIndex] -> GetParameter(1) << endl;
+            cout << "First peak fit result: "
+                 << "Peak: " << sFitFunArray[peakIndex]->GetParameter(1) << " Sigma: " << sFitFunArray[peakIndex]->GetParameter(2) << endl;
 #endif
         }
         else
@@ -155,6 +158,8 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
 
             // It seems 2 * gain may be a little wider than best fit range
             double end = sLastPeakMean + 1.5 * fGainGuess;
+            if (fGainGuess > 70)
+                end = sLastPeakMean + 2 * fGainGuess;
 
             // pass all parameter of the last fit function to the new function just created
             for (int par_index = 0; par_index < 3 * peakIndex; par_index++)
@@ -168,15 +173,16 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
             sFitFunArray[peakIndex]->SetParameter(3 * peakIndex + 2, fFirstPeakSigma);
             sFitFunArray[peakIndex]->SetParLimits(3 * peakIndex + 2, 0.001 * fGainGuess, 0.2 * fGainGuess);
 
-            #ifdef VERBOSE
+#ifdef VERBOSE
             cout << "**********" << endl;
             cout << "Fit Index: " << peakIndex << " is Fitting" << endl;
             cout << "Start: " << start << endl;
             cout << "End: " << end << endl;
             cout << "Gain Guess: " << fGainGuess << endl;
             cout << "Parameter limits: " << endl;
-            cout << "peak mean : " << "start: " << sLastPeakMean << " end: " << sLastPeakMean + 2 * fGainGuess << endl;
-            #endif
+            cout << "peak mean : "
+                 << "start: " << sLastPeakMean << " end: " << sLastPeakMean + 2 * fGainGuess << endl;
+#endif
 
             fHGauss->Fit(sFitFunArray[peakIndex], "Q", "", start, end);
 
@@ -257,21 +263,12 @@ double FitSpectrum::EstimateGain()
         return -1;
     }
 
-    fSpectrum->Search(fHOrigin, 5, "", 0.001);
+    // fSpectrum->Search(fHOrigin, 5, "", 0.001);
+    fSpectrum->Search(fHOrigin, 1, "", 0.01);
 
     int peaks = fSpectrum->GetNPeaks();
     auto peaksX = fSpectrum->GetPositionX();
     auto peaksY = fSpectrum->GetPositionY();
-
-    if (peaks < 2)
-    {
-        // delete []peaksX;
-        // delete []peaksY;
-        fSpectrum->Search(fHOrigin, 1, "", 0.01);
-        peaks = fSpectrum->GetNPeaks();
-        peaksX = fSpectrum->GetPositionX();
-        peaksY = fSpectrum->GetPositionY();
-    }
 
     // Estimate gain
     // Put all points into a map, sort all peaks Y
@@ -294,7 +291,7 @@ double FitSpectrum::EstimateGain()
     }
 
     // Getkl Peak position info
-    map<double, double>::iterator iter;
+    map<double, double>::iterator iter, iter2;
 
     // It seems none sense here
 
@@ -307,6 +304,11 @@ double FitSpectrum::EstimateGain()
         for (iter = mapPeakX.begin(); iter->first < 100 && iter != mapPeakX.end(); iter++)
             ;
     }
+
+    iter2 = iter;
+    iter++;
+    if (iter2->second > 0.3 * iter->second)
+        iter--;
 
     if (iter == mapPeakX.end())
     {
@@ -377,7 +379,7 @@ double FitSpectrum::EstimateGain()
     fFirstPeakFitGuess = peak0;
     fFirstPeakStartFitPoint = fFirstPeakMeanStartLimit = peak0 - 0.5 * fGainGuess;
     fFirstPeakMeanEndLimit = peak0 + 0.5 * fGainGuess;
-    fFirstPeakSigma = 0.2 * fGainGuess;
+    fFirstPeakSigma = 0.1 * fGainGuess;
 
 #ifdef VERBOSE
     cout << "First Peak guess: " << fFirstPeakFitGuess << endl;

@@ -11,6 +11,8 @@ int fInit = 0;
 int fDAQNum = 50000;
 
 void CheckGain2(int group);
+void ExecAfterMeasure(int group);
+
 void CheckGain2Loop(int startIndex = 1)
 {
     if (!fInit)
@@ -77,7 +79,7 @@ void CheckGain2(int group)
             fChanGain[i]->SetNumber(0);
         }
 
-        for (int ampGain : {20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49} )
+        for (int ampGain : {20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49})
         {
             fChanEnaTrig[ch1]->SetOn();
             fChanGain[ch1]->SetNumber(ampGain);
@@ -100,4 +102,16 @@ void CheckGain2(int group)
             hst[ch2]->SaveAs((filename2 + ".root").c_str());
         }
     }
+
+    ExecAfterMeasure(group);
+}
+
+void ExecAfterMeasure(int group)
+{
+    gSystem->Exec("mkdir pdf root");
+    gSystem->Exec("mv *.pdf pdf");
+    gSystem->Exec("mv *.root root");
+    gSystem->Exec("cp UserDefine/CheckAmp-32SiPM/readall UserDefine/FitSiPMSPE/test2 UserDefine/CheckAmp-32SiPM/Fit.cpp  root/");
+    gSystem->Exec(Form("mkdir Group%d", group));
+    gSystem->Exec(Form("mv pdf root Group%d", group));
 }
