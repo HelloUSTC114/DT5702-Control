@@ -1,6 +1,6 @@
 #include "FitSiPMSPE.h"
 using namespace std;
-// #define VERBOSE
+#define VERBOSE
 
 MultiGauss::MultiGauss(int nPeak)
 {
@@ -167,10 +167,10 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
             if (peakIndex > 0)
                 ;
             auto tFitFun = sFitFunArray[peakIndex];
-            int peakx1 = tFitFun->GetParameter(3 * peakIndex + 1);
-            int peakx2 = tFitFun->GetParameter(3 * peakIndex - 2);
+            int peakx1 = tFitFun->GetParameter(3 * peakIndex - 2);
+            int peakx2 = tFitFun->GetParameter(3 * peakIndex + 1);
             int gaintest = peakx1 - peakx2;
-            if (TMath::Abs(TMath::Abs(peakx1 - peakx2) - fGainGuess) > 0.15 * fGainGuess)
+            if (TMath::Abs(TMath::Abs(peakx1 - peakx2) - fGainGuess) > 0.2 * fGainGuess)
             {
 #ifdef VERBOSE
                 fHOrigin->SaveAs("ErrorOrigin.root");
@@ -246,20 +246,42 @@ double FitSpectrum::EstimateGain()
     auto peaksX = fSpectrum->GetPositionX();
     auto peaksY = fSpectrum->GetPositionY();
 
+    if (peaks < 2)
+    {
+        // delete []peaksX;
+        // delete []peaksY;
+        fSpectrum->Search(fHOrigin, 1, "", 0.01);
+        peaks = fSpectrum->GetNPeaks();
+        peaksX = fSpectrum->GetPositionX();
+        peaksY = fSpectrum->GetPositionY();
+    }
+
     // Estimate gain
     // Put all points into a map, sort all peaks Y
     map<double, double> Points;
     map<double, double> mapPeakX;
 
+    double maxPeakX = peaksX[0];
+    double maxPeakY = peaksY[0];
+#ifdef VERBOSE
+    cout << "MaxPeak X: " << maxPeakX << '\t' << "MaxPeak Y: " << maxPeakY << endl;
+#endif
+
     for (int i = 0; i < peaks; i++)
     {
-        mapPeakX.insert(pair<double, double>(peaksX[i], peaksY[i]));
+#ifdef VERBOSE
+        cout << "Peak " << i << '\t' << peaksX[i] << '\t' << peaksY[i] << endl;
+#endif
+        if (peaksY[i] > 0.03 * maxPeakY) // Filter some small peaks;
+            mapPeakX.insert(pair<double, double>(peaksX[i], peaksY[i]));
     }
 
     // Getkl Peak position info
     map<double, double>::iterator iter;
 
-    for (iter = mapPeakX.begin(); iter->first < 300 && iter != mapPeakX.end(); iter++)
+    // It seems none sense here
+
+    for (iter = mapPeakX.begin(); iter->first < 150 && iter != mapPeakX.end(); iter++)
         ; // if peak0 is at position smaller than 150, continue
 
     if (iter == mapPeakX.end())
