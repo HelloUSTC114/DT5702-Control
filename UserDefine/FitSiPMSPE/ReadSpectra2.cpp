@@ -38,7 +38,7 @@ int main(int argc, char **argv)
         
     }
     cout << "Result: "
-         << "FileName:" << sRootFileName << "HistoName:" << sHistName << endl
+         << "FileName:" << sRootFileName << " HistoName:" << sHistName << endl
          << "Gain: " << result.gain << endl
          << "Peak: " << result.peak0 << endl;
     return 0;

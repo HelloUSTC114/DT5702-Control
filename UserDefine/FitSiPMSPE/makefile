@@ -14,15 +14,18 @@ clean:
 	-@rm -rf *.so *.pcm Link.cxx
 
 test:	ReadSpectra.cpp ${FULLLIB}
-	`root-config --cxx --cflags` -fPIC -o $@ $< -L. -l${LIB} `root-config --libs`
+	-@`root-config --cxx --cflags` -fPIC -o $@ $< -L. -l${LIB} `root-config --libs`
 
 test2:	ReadSpectra2.cpp ${FULLLIB}
-	`root-config --cxx --cflags` -fPIC -o $@ $< -L. -l${LIB} `root-config --libs`
+	-`root-config --cxx --cflags` -fPIC -o $@ $< -L. -l${LIB} `root-config --libs`
 
 
 install:
 	-@mkdir excute
 	-@cp $(FULLLIB) test2 rootlogon.C *.pcm excute
+	-@cp $(FULLLIB) /home/john/lib
+	-@cp $(HEADER) /home/john/include
+	# -@cp *.pcm /home/john/include
 clean:
 	-@rm $(FULLLIB) test Link.cxx *.pcm
 distclean:

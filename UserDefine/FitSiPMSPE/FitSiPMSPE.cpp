@@ -132,11 +132,14 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
             // Set first Peak limits
             sFitFunArray[peakIndex]->SetParLimits(1, fFirstPeakMeanStartLimit, fFirstPeakMeanEndLimit);
             sFitFunArray[peakIndex]->SetParameter(0, 60);
-            sFitFunArray[peakIndex]->SetParameter(1, 300);
-            sFitFunArray[peakIndex]->SetParameter(2, 20);
+            sFitFunArray[peakIndex]->SetParameter(1, fFirstPeakFitGuess);
+            sFitFunArray[peakIndex]->SetParameter(2, 0.05 * fGainGuess);
 
             // Start position should be given and fixed in further fit
-            fHGauss->Fit(sFitFunArray[peakIndex], "Q", "", fFirstPeakStartFitPoint, fFirstPeakStartFitPoint + 2 * fFirstPeakSigma);
+#ifdef VERBOSE
+            cout << "First peak fit Range: " << fFirstPeakStartFitPoint << "~" << fFirstPeakMeanEndLimit << endl;
+#endif
+            fHGauss->Fit(sFitFunArray[peakIndex], "Q", "", fFirstPeakStartFitPoint, fFirstPeakMeanEndLimit);
         }
         else
         {
@@ -156,8 +159,8 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
             // Set Initial value of parameters
             sFitFunArray[peakIndex]->SetParameter(3 * peakIndex + 1, sLastPeakMean + fGainGuess);
             sFitFunArray[peakIndex]->SetParLimits(3 * peakIndex + 1, sLastPeakMean, sLastPeakMean + 2 * fGainGuess);
-            sFitFunArray[peakIndex]->SetParameter(3 * peakIndex + 2, 10);
-            sFitFunArray[peakIndex]->SetParLimits(3 * peakIndex + 2, 5, 40);
+            sFitFunArray[peakIndex]->SetParameter(3 * peakIndex + 2, fFirstPeakSigma);
+            sFitFunArray[peakIndex]->SetParLimits(3 * peakIndex + 2, 0.001 * fGainGuess, 0.2 * fGainGuess);
 
             fHGauss->Fit(sFitFunArray[peakIndex], "Q", "", start, end);
 
@@ -169,6 +172,17 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
             int gaintest = peakx1 - peakx2;
             if (TMath::Abs(TMath::Abs(peakx1 - peakx2) - fGainGuess) > 0.15 * fGainGuess)
             {
+#ifdef VERBOSE
+                fHOrigin->SaveAs("ErrorOrigin.root");
+                fHGauss->SaveAs("ErrorGauss.root");
+
+                cout << "Peak1: " << peakx1 << endl;
+                cout << "Peak2: " << peakx2 << endl;
+                cout << "Sigma Guess: " << fFirstPeakSigma << endl;
+                cout << "Sigma: " << tFitFun->GetParameter(3 * peakIndex + 2) << endl;
+                cout << "Fit gain: " << TMath::Abs(peakx1 - peakx2) << endl;
+                cout << "Guess gain: " << fGainGuess << endl;
+#endif
                 fFitSuccess = false;
                 return false;
             }
@@ -204,7 +218,15 @@ bool FitSpectrum::Fit(TH1 *h, UInt_t nGauss)
 
     auto b = FitHist(nGauss);
 #ifdef VERBOSE
-    cout << "Fit done." << endl;
+    if (b)
+    {
+        cout << "Fit success." << endl;
+    }
+    else
+    {
+        cout << "Fit fail." << endl;
+    }
+
 #endif
 
     return a && b; // && FitHist(nGauss);
@@ -256,14 +278,6 @@ double FitSpectrum::EstimateGain()
 
     auto peak0 = iter->first;
 
-#ifdef VERBOSE
-    cout << "Fit Process: peak0: " << peak0 << endl;
-
-#endif
-
-    fFirstPeakStartFitPoint = fFirstPeakMeanStartLimit = peak0 - 20;
-    fFirstPeakMeanEndLimit = peak0 + 20;
-
     // Get gain
     /*
     double largestPeakX = peaksX[0];
@@ -313,8 +327,26 @@ double FitSpectrum::EstimateGain()
     // double peak3 = iter -> first;
     // fGainGuess = (peak2 + peak3) / 4- (peak0 + peak1) / 4;
     fGainGuess = (peak1 - peak0);
+
 #ifdef VERBOSE
+    cout << "----------------" << endl;
+    cout << "Gain guess, peak from TSpectrum." << endl;
+    cout << "Peak0: " << peak0 << endl;
+    cout << "Peak1: " << peak1 << endl;
+#endif
+
+    fFirstPeakFitGuess = peak0;
+    fFirstPeakStartFitPoint = fFirstPeakMeanStartLimit = peak0 - 0.5 * fGainGuess;
+    fFirstPeakMeanEndLimit = peak0 + 0.5 * fGainGuess;
+    fFirstPeakSigma = 0.2 * fGainGuess;
+
+#ifdef VERBOSE
+    cout << "First Peak guess: " << fFirstPeakFitGuess << endl;
+    cout << "First Peak start fit point: " << fFirstPeakStartFitPoint << endl;
+    cout << "First Peak mean end: " << fFirstPeakMeanEndLimit << endl;
+    cout << "First Peak sigma: " << fFirstPeakSigma << endl;
     cout << "Guess gain in estimation: " << fGainGuess << endl;
+    cout << "---------------" << endl;
 #endif
     return fGainGuess;
 }
@@ -323,11 +355,17 @@ FitResult FitSpectrum::GetGain() const
 {
     if (!fFitFlag)
     {
+#ifdef VERBOSE
+        cout << "Error! Has not fit yet, cannot get gain." << endl;
+#endif
         return {-1, -1};
     }
 
     if (!fFitSuccess)
     {
+#ifdef VERBOSE
+        cout << "Error! Fit failed, cannot get gain." << endl;
+#endif
         return {-1, -1};
     }
 

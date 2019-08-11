@@ -71,7 +71,7 @@
 1 'PP: 4b_dac'
 1 ' EN_4b_dac_t'
 1 'PP: 4b_dac_t'
-00111111111111111111111111111111 ' Allows to Mask Discriminator (channel 0 to 31) [active low]'
+00110000000000000000000000000000 ' Allows to Mask Discriminator (channel 0 to 31) [active low]'
 1 ' Disable High Gain Track & Hold power pulsing mode (force ON)'
 1 ' Enable High Gain Track & Hold'
 1 ' Disable Low Gain Track & Hold power pulsing mode (force ON)'

@@ -60,6 +60,7 @@ private:
     TH1 *fHGauss = NULL;
     TH1 *fHAdd = NULL;
 
+    double fFirstPeakFitGuess = 350;
     double fFirstPeakMeanStartLimit = 350;
     double fFirstPeakMeanEndLimit = 500;
     double fFirstPeakStartFitPoint = 350;
