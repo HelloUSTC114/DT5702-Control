@@ -131,7 +131,7 @@ bool FitSpectrum::FitHist(UInt_t nGauss)
         {
             // Set first Peak limits
             sFitFunArray[peakIndex]->SetParLimits(1, fFirstPeakMeanStartLimit, fFirstPeakMeanEndLimit);
-            sFitFunArray[peakIndex]->SetParameter(0, 60);
+            sFitFunArray[peakIndex]->SetParameter(0, fFirstPeakHeightGuess);
             sFitFunArray[peakIndex]->SetParameter(1, fFirstPeakFitGuess);
             sFitFunArray[peakIndex]->SetParameter(2, 0.05 * fGainGuess);
 
@@ -377,6 +377,8 @@ double FitSpectrum::EstimateGain()
 #endif
 
     fFirstPeakFitGuess = peak0;
+    fFirstPeakHeightGuess = iter -> second;
+
     fFirstPeakStartFitPoint = fFirstPeakMeanStartLimit = peak0 - 0.5 * fGainGuess;
     fFirstPeakMeanEndLimit = peak0 + 0.5 * fGainGuess;
     fFirstPeakSigma = 0.1 * fGainGuess;
