@@ -270,6 +270,15 @@ double FitSpectrum::EstimateGain()
     auto peaksX = fSpectrum->GetPositionX();
     auto peaksY = fSpectrum->GetPositionY();
 
+    if (peaks > 6)
+    {
+        fSpectrum->Search(fHOrigin, 5, "", 0.01);
+
+        peaks = fSpectrum->GetNPeaks();
+        peaksX = fSpectrum->GetPositionX();
+        peaksY = fSpectrum->GetPositionY();
+    }
+
     // Estimate gain
     // Put all points into a map, sort all peaks Y
     map<double, double> Points;
@@ -277,6 +286,12 @@ double FitSpectrum::EstimateGain()
 
     double maxPeakX = peaksX[0];
     double maxPeakY = peaksY[0];
+
+    if(maxPeakX > 3500)
+    {
+        maxPeakX = peaksX[1];
+        maxPeakY = peaksY[1];
+    }
 #ifdef VERBOSE
     cout << "MaxPeak X: " << maxPeakX << '\t' << "MaxPeak Y: " << maxPeakY << endl;
 #endif
@@ -305,6 +320,7 @@ double FitSpectrum::EstimateGain()
             ;
     }
 
+    // Filter first Peak, if it's too small, abondon the first Peak
     iter2 = iter;
     iter++;
     if (iter2->second > 0.3 * iter->second)
@@ -377,7 +393,7 @@ double FitSpectrum::EstimateGain()
 #endif
 
     fFirstPeakFitGuess = peak0;
-    fFirstPeakHeightGuess = iter -> second;
+    fFirstPeakHeightGuess = iter->second;
 
     fFirstPeakStartFitPoint = fFirstPeakMeanStartLimit = peak0 - 0.5 * fGainGuess;
     fFirstPeakMeanEndLimit = peak0 + 0.5 * fGainGuess;
@@ -467,7 +483,7 @@ void FitSpectrum::Save(string filename)
     }
 }
 
-FitResult ReadSpectra(string sFile, string sHist, string fileNamePre, bool saveFlag)
+FitResult ReadSpectra(string sFile, string sHist, string fileNamePre, bool saveFlag, int peakNum)
 {
     auto file = new TFile(sFile.c_str());
     auto hist = (TH1F *)file->Get(sHist.c_str());
@@ -477,7 +493,11 @@ FitResult ReadSpectra(string sFile, string sHist, string fileNamePre, bool saveF
         cout << "Not open" << endl;
         return {-1, -1};
     }
-    bool fitResult = sFitSpectrum.Fit(hist, 3);
+    if(peakNum < 0 || peakNum > 10)
+    {
+        peakNum = 3;
+    }
+    bool fitResult = sFitSpectrum.Fit(hist, peakNum);
     if (saveFlag)
     {
         sFitSpectrum.Save(sHist + ".root");

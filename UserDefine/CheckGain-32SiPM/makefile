@@ -1,2 +1,2 @@
-CalcAmp: CalcAmp.cpp
+CalcBias: CalcBias.cpp
 	-`root-config --cxx --cflags` -fPIC -o $@ $< -L. -lFitSiPM `root-config --libs`
