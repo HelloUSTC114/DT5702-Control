@@ -279,6 +279,15 @@ double FitSpectrum::EstimateGain()
         peaksY = fSpectrum->GetPositionY();
     }
 
+    if (peaks < 3)
+    {
+        fSpectrum->Search(fHOrigin, 2.5, "", 0.01);
+
+        peaks = fSpectrum->GetNPeaks();
+        peaksX = fSpectrum->GetPositionX();
+        peaksY = fSpectrum->GetPositionY();
+    }
+
     // Estimate gain
     // Put all points into a map, sort all peaks Y
     map<double, double> Points;
@@ -287,7 +296,7 @@ double FitSpectrum::EstimateGain()
     double maxPeakX = peaksX[0];
     double maxPeakY = peaksY[0];
 
-    if(maxPeakX > 3500)
+    if (maxPeakX > 3500)
     {
         maxPeakX = peaksX[1];
         maxPeakY = peaksY[1];
@@ -493,7 +502,7 @@ FitResult ReadSpectra(string sFile, string sHist, string fileNamePre, bool saveF
         cout << "Not open" << endl;
         return {-1, -1};
     }
-    if(peakNum < 0 || peakNum > 10)
+    if (peakNum < 0 || peakNum > 10)
     {
         peakNum = 3;
     }

@@ -50,7 +50,7 @@ int Fit(int ch)
     auto fun1 = new TF1("fitfun", "pol1", 0, 63);
     tg1->Fit(fun1, "", "", 20, 40);
 
-    tg1->SaveAs(Form("tgCh%d.root", ch));
+    tg1->SaveAs(Form("AmptgCh%d.root", ch));
     // cout << "Test" << endl;
 
     auto tg3 = new TGraph();
@@ -73,8 +73,40 @@ int Fit(int ch)
     tg3 -> SetTitle("Amplifier Calibration;DAC;Gain of DAC=30 divide this gain");
     tg3 -> SaveAs(Form("CaliResultCh%d", ch));
 
-    string sFun = (string)"Ch" + sCh + "Fun.root";
+    string sFun = (string)"AmpCh" + sCh + "Fun.root";
     fun1 -> SaveAs(sFun.c_str());
 
+    return 0;
+}
+
+int main(int argc, char** argv)
+{
+    if(argc == 1)
+    {
+        cout << "Please input arguments like: [group No.]" << endl;
+        return 0;
+    }
+    int group = 0;
+    string sGroup;
+    if(argc > 1)
+    {
+        sGroup = argv[1];
+        try
+        {
+            group = stoi(sGroup);
+        }
+        catch(const std::invalid_argument & err)
+        {
+            cerr << "Error! wrong input format, please input like [group No.]" << endl;
+            return 0;
+        }
+        
+    }
+
+    int ch1 = group * 2;
+    int ch2 = ch1 + 1;
+
+    Fit(ch1);
+    Fit(ch2);
     return 0;
 }

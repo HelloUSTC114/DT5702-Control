@@ -8,7 +8,7 @@ And Can be used to fine tune common bias after getting the largest gain channel.
 using namespace std;
 
 int fInit = 0;
-int fDAQNum = 50000;
+int fDAQNum = 100000;
 
 void CheckGain2(int group);
 void ExecAfterMeasure(int group);
@@ -53,7 +53,7 @@ void CheckGain2(int group)
     gSystem->ProcessEvents();
     gSystem->Sleep(1000);
 
-    for (int bias : {0}) // Set different bias
+    for (int bias : {250}) // Set different bias
     {
         int ch1 = group * 2;
         int ch2 = ch1 + 1;
@@ -112,6 +112,6 @@ void ExecAfterMeasure(int group)
     gSystem->Exec("mv *.pdf pdf");
     gSystem->Exec("mv *.root root");
     gSystem->Exec("cp UserDefine/CheckAmp-32SiPM/CalcAmp UserDefine/FitSiPMSPE/test2 UserDefine/CheckAmp-32SiPM/Fit.cpp  root/");
-    gSystem->Exec(Form("mkdir Group%d", group));
-    gSystem->Exec(Form("mv pdf root Group%d", group));
+    gSystem->Exec(Form("mkdir Group%d-Amp", group));
+    gSystem->Exec(Form("mv pdf root Group%d-Amp", group));
 }
