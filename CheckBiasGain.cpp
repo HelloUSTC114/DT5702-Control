@@ -112,7 +112,13 @@ void ExecAfterMeasure(int group)
     gSystem->Exec("mkdir pdf root");
     gSystem->Exec("mv *.pdf pdf");
     gSystem->Exec("mv *.root root");
-    gSystem->Exec("cp UserDefine/CheckGain-32SiPM/CalcBias UserDefine/FitSiPMSPE/test2 UserDefine/CheckGain-32SiPM/Fit.cpp  root/");
+    gSystem->Exec("cp UserDefine/CheckGain-32SiPM/CalcBias UserDefine/FitSiPMSPE/test2 UserDefine/CheckGain-32SiPM/Fit.cpp UserDefine/CheckGain-32SiPM/Fit  root/");
+
+    gSystem->Exec("cd root");
+    gSystem->Exec(Form("./CalcBias %d %d %d", group, 30, 5)); // Execute CalcAmp program
+    gSystem->Exec(Form("./Fit %d", group));
+    gSystem->Exec("cd ..");
+
     gSystem->Exec(Form("mkdir Group%d-Bias", group));
     gSystem->Exec(Form("mv pdf root Group%d-Bias", group));
 }

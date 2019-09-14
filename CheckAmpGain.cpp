@@ -111,7 +111,13 @@ void ExecAfterMeasure(int group)
     gSystem->Exec("mkdir pdf root");
     gSystem->Exec("mv *.pdf pdf");
     gSystem->Exec("mv *.root root");
-    gSystem->Exec("cp UserDefine/CheckAmp-32SiPM/CalcAmp UserDefine/FitSiPMSPE/test2 UserDefine/CheckAmp-32SiPM/Fit.cpp  root/");
+    gSystem->Exec("cp UserDefine/CheckAmp-32SiPM/CalcAmp UserDefine/FitSiPMSPE/test2 UserDefine/CheckAmp-32SiPM/Fit.cpp UserDefine/CheckAmp-32SiPM/Fit  root/");
+
+    gSystem->Exec("cd root");
+    gSystem->Exec(Form("./CalcAmp %d %d %d", group, 250, 5)); // Execute CalcAmp program
+    gSystem->Exec(Form("./Fit %d", group));
+    gSystem->Exec("cd ..");
+    
     gSystem->Exec(Form("mkdir Group%d-Amp", group));
     gSystem->Exec(Form("mv pdf root Group%d-Amp", group));
 }
